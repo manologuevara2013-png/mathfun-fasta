@@ -1,1 +1,13 @@
-# mathfun-fasta
+src/types/index.ts
+src/hooks/useSetEngine.ts
+src/hooks/useVoiceSynthesis.ts
+src/context/UserContext.tsx
+src/context/MathSetContext.tsx
+src/components/SetContainer.tsx
+src/components/SetItem.tsx
+src/services/ProblemGenerator.ts
+src/screens/RoleSelectionScreen.tsx
+src/screens/StudentSelectionScreen.tsx
+src/screens/GameScreen.tsx
+src/screens/StudentProgressScreen.tsx
+src/screens/CoordinatorDashboardScreen.tsx
