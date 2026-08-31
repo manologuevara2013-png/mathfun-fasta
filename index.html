@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MathFun FASTA</title>
+<style>
+  :root{
+    --azul:#0a4da2; --azul2:#1565c0; --dorado:#f5c542; --dorado2:#e0a800;
+    --verde:#43c463; --naranja:#ff9e3d; --rojo:#ef5350; --violeta:#9b59d0;
+    --rosa:#ff6fae; --celeste:#4dd0e1;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;height:100%;font-family:'Comic Sans MS','Baloo',system-ui,sans-serif;overflow:hidden;}
+  body{background:linear-gradient(160deg,#0a4da2 0%,#1565c0 55%,#4dd0e1 130%);color:#fff;user-select:none;}
+  #app{position:fixed;inset:0;display:flex;flex-direction:column;}
+
+  .cloud{position:absolute;background:rgba(255,255,255,.16);border-radius:50%;filter:blur(2px);animation:float 20s linear infinite;pointer-events:none;}
+  @keyframes float{from{transform:translateX(-25vw)}to{transform:translateX(125vw)}}
+
+  .screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:safe center;padding:60px 14px 28px;position:relative;z-index:2;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .helpbtn{background:var(--dorado);color:#0a2a52;border:none;border-radius:14px;padding:8px 12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.2);}
+  .moneybtn{background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.25);border-radius:14px;padding:4px;cursor:pointer;font-family:inherit;transition:transform .08s;display:inline-flex;align-items:center;justify-content:center;line-height:0;}
+  .moneybtn:active{transform:translateY(3px);}
+  .ejehdr{width:100%;max-width:520px;text-align:left;font-weight:800;font-size:clamp(16px,4vw,19px);color:var(--dorado);margin:16px 0 4px 6px;border-bottom:2px solid rgba(255,255,255,.28);padding-bottom:4px;display:flex;align-items:center;gap:8px;}
+  .ejesub{width:100%;max-width:520px;text-align:left;font-size:12.5px;opacity:.85;margin:0 0 8px 6px;font-style:italic;}
+  .fasta-nota{max-width:520px;font-size:13px;font-style:italic;opacity:.92;margin:20px auto 4px;line-height:1.45;background:rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;}
+  .ayuda-back{position:fixed;inset:0;z-index:9999;background:rgba(4,30,60,.75);display:flex;align-items:center;justify-content:center;padding:18px;animation:pop .25s;}
+  .ayuda-card{background:#fff;color:#0a2a52;border-radius:22px;max-width:470px;width:95%;padding:22px;box-shadow:0 14px 44px rgba(0,0,0,.45);text-align:left;max-height:86vh;overflow-y:auto;}
+  /* respaldo para navegadores viejos que no entienden "safe center" */
+  @supports not (justify-content:safe center){ .screen{justify-content:flex-start;} }
+  h1{font-size:clamp(28px,7vw,50px);margin:.02em 0 .08em;color:var(--dorado);text-shadow:0 3px 0 var(--dorado2),0 6px 10px rgba(0,0,0,.3);}
+  .sub{font-size:clamp(14px,3.5vw,20px);opacity:.95;margin:0 0 8px;}
+
+  .card{background:rgba(255,255,255,.12);border:2px solid rgba(255,255,255,.25);border-radius:24px;padding:22px;max-width:520px;width:92%;box-shadow:0 10px 30px rgba(0,0,0,.25);animation:pop .5s;}
+  .frase{font-style:italic;font-size:clamp(16px,4vw,22px);line-height:1.4;color:#fff;margin:10px 0;}
+  .frase .autor{display:block;font-style:normal;font-size:.75em;color:var(--dorado);margin-top:8px;}
+
+  .menugrid{display:flex;flex-wrap:wrap;justify-content:center;align-items:stretch;gap:12px;width:100%;max-width:740px;margin:4px auto 2px;}
+  .bigbtn{border:none;border-radius:24px;padding:18px 16px;margin:0;flex:1 1 250px;min-width:220px;max-width:340px;font-family:inherit;font-size:clamp(16px,4vw,22px);font-weight:bold;color:#fff;cursor:pointer;box-shadow:0 7px 0 rgba(0,0,0,.22),0 10px 18px rgba(0,0,0,.25);display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .08s,box-shadow .08s;animation:pop .4s;}
+  .bigbtn:active{transform:translateY(5px);box-shadow:0 2px 0 rgba(0,0,0,.22);}
+  .bigbtn .emo{font-size:1.5em;}
+  .bigbtn small{display:block;font-size:.58em;font-weight:normal;opacity:.9;margin-top:2px;}
+  @keyframes pop{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+  .mascot{font-size:clamp(50px,12vw,84px);line-height:.82;margin:0;animation:bob 2.2s ease-in-out infinite;filter:drop-shadow(0 8px 10px rgba(0,0,0,.3));}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-14px) rotate(3deg)}}
+
+  .field{width:min(360px,90vw);margin:8px auto;text-align:left;}
+  .field label{display:block;font-size:15px;color:var(--dorado);margin-bottom:4px;font-weight:bold;}
+  .field input,.field select{width:100%;padding:14px;border-radius:16px;border:none;font-family:inherit;font-size:17px;color:var(--azul);}
+  .grid2{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+
+  .topbar{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:680px;position:absolute;top:0;left:50%;transform:translateX(-50%);padding:12px 16px;z-index:5;}
+  .backbtn{background:rgba(255,255,255,.2);border:none;color:#fff;font-family:inherit;font-size:15px;font-weight:bold;padding:8px 14px;border-radius:20px;cursor:pointer;}
+  .who{background:rgba(255,255,255,.15);padding:8px 14px;border-radius:20px;font-size:14px;font-weight:bold;}
+  .starcount{background:rgba(0,0,0,.22);padding:8px 14px;border-radius:20px;font-size:17px;font-weight:bold;color:var(--dorado);}
+
+  .instr{font-size:clamp(15px,3.6vw,20px);margin:10px 0;max-width:680px;line-height:1.35;}
+  .op{font-size:clamp(32px,9vw,56px);font-weight:bold;color:var(--dorado);text-shadow:0 3px 0 var(--dorado2);margin:6px 0;}
+
+  .setcircle{width:min(320px,86vw);min-height:min(190px,40vh);border-radius:50%;border:6px dashed var(--dorado);background:rgba(255,255,255,.12);display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px;padding:16px;margin:6px auto;}
+  .obj{font-size:clamp(28px,7vw,44px);cursor:pointer;transition:transform .12s;animation:drop .4s;filter:drop-shadow(0 3px 3px rgba(0,0,0,.25));}
+  .obj:active{transform:scale(.8);}
+  @keyframes drop{from{transform:translateY(-40px) scale(.4);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .wiggle{animation:wiggle 1.4s ease-in-out infinite;}
+  @keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+
+  .bank{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:8px 0;max-width:680px;}
+  .bankitem{background:rgba(255,255,255,.9);border-radius:16px;padding:6px 10px;cursor:pointer;box-shadow:0 4px 0 rgba(0,0,0,.15);transition:transform .08s;}
+  .bankitem:active{transform:translateY(3px);}
+
+  .cols{display:flex;gap:16px;justify-content:center;margin:8px 0;flex-wrap:wrap;}
+  .col{min-width:130px;}
+  .coltitle{font-size:14px;color:var(--dorado);font-weight:bold;margin-bottom:4px;}
+  .colbox{min-width:130px;min-height:120px;border:3px solid rgba(255,255,255,.4);border-radius:16px;background:rgba(255,255,255,.1);display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:3px;padding:8px;}
+  .bag{font-size:36px;cursor:pointer;animation:drop .4s;filter:drop-shadow(0 3px 4px rgba(0,0,0,.3));}
+  .bag:active{transform:scale(.85);}
+  .unit{font-size:24px;animation:drop .35s;}
+  .colval{font-size:14px;margin-top:6px;opacity:.9;}
+  .total{font-size:clamp(20px,5vw,28px);font-weight:bold;margin:8px 0;}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:6px;}
+  .abtn{border:none;border-radius:20px;padding:15px 22px;font-family:inherit;font-size:clamp(15px,4vw,19px);font-weight:bold;color:#fff;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.2);transition:transform .08s;}
+  .abtn:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.2);}
+
+  .msg{font-size:clamp(19px,5vw,28px);font-weight:bold;margin-top:14px;min-height:1.2em;}
+  .msg.ok{color:#b9ffce;animation:popbig .5s;}
+  .msg.bad{color:#ffd6d6;}
+  @keyframes popbig{0%{transform:scale(.3)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:50;}
+  .confe{position:absolute;width:12px;height:12px;top:-20px;animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(105vh) rotate(720deg)}}
+
+  .choicegrid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px;}
+  .choice{background:#fff;color:var(--azul);border:none;border-radius:18px;width:66px;height:66px;font-size:26px;font-weight:bold;font-family:inherit;cursor:pointer;box-shadow:0 5px 0 rgba(0,0,0,.15);transition:transform .08s;}
+  .choice.txt{width:auto;min-width:78px;height:auto;min-height:58px;padding:10px 16px;font-size:clamp(15px,3.6vw,19px);line-height:1.15;display:inline-flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;}
+  .choice:active{transform:translateY(4px);box-shadow:0 1px 0 rgba(0,0,0,.15);}
+</style>
+</head>
+<body>
+<div id="confetti"></div>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   MathFun FASTA - App web v2
+   Bienvenida + Ingreso alumno + 1er GRADO completo
+   Colegio FASTA Juan Pablo II - Mendoza
+   ============================================================ */
+
+const app=document.getElementById('app');
+let alumno={nombre:'',nivel:'',grado:''};
+let estrellas=0;
+
+const EMO={apple:'🍎',star:'⭐',car:'🚗',animal:'🐱',flower:'🌸',fish:'🐠'};
+const TIPOS=Object.keys(EMO);
+const DINERO_COL={
+  1:{tipo:'moneda',c1:'#d79a63',c2:'#a86a34'},
+  5:{tipo:'moneda',c1:'#d9dde2',c2:'#9aa0a8'},
+  10:{tipo:'billete',c1:'#9aa84a',c2:'#5f7327',txt:'#fff'},
+  20:{tipo:'billete',c1:'#db5a5a',c2:'#a12f2f',txt:'#fff'},
+  50:{tipo:'billete',c1:'#38a89a',c2:'#1f6f66',txt:'#fff'},
+  100:{tipo:'billete',c1:'#8a70cf',c2:'#54408f',txt:'#fff'},
+  500:{tipo:'billete',c1:'#46a857',c2:'#2a6e37',txt:'#fff'},
+  1000:{tipo:'billete',c1:'#e0954a',c2:'#a85f22',txt:'#fff'},
+  2000:{tipo:'billete',c1:'#cf5a98',c2:'#8f2f63',txt:'#fff'},
+  10000:{tipo:'billete',c1:'#c39a3f',c2:'#836223',txt:'#fff'},
+  20000:{tipo:'billete',c1:'#5a8bcf',c2:'#2f548f',txt:'#fff'}
+};
+function dineroFig(v){
+  const d=DINERO_COL[v]||{tipo:'billete',c1:'#8a8a8a',c2:'#555',txt:'#fff'};
+  const s=String(v);
+  if(d.tipo==='moneda'){
+    return `<svg viewBox="0 0 60 60" width="46" height="46" style="margin:3px;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))">
+      <defs><radialGradient id="cn${v}" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="${d.c1}"/><stop offset="1" stop-color="${d.c2}"/></radialGradient></defs>
+      <circle cx="30" cy="30" r="27" fill="url(#cn${v})" stroke="${d.c2}" stroke-width="2"/>
+      <circle cx="30" cy="30" r="21" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+      <text x="30" y="36" text-anchor="middle" font-size="23" font-weight="900" fill="#3a2a12" font-family="Arial">${v}</text>
+      <text x="30" y="48" text-anchor="middle" font-size="6" font-weight="700" fill="#3a2a12" font-family="Arial">PESOS</text></svg>`;
+  }
+  const fs=s.length<=2?24:(s.length===3?19:(s.length===4?15:12));
+  return `<svg viewBox="0 0 120 66" width="90" height="50" style="margin:3px;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))">
+    <defs><linearGradient id="bl${v}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${d.c1}"/><stop offset="1" stop-color="${d.c2}"/></linearGradient></defs>
+    <rect x="2" y="2" width="116" height="62" rx="8" fill="url(#bl${v})" stroke="rgba(255,255,255,.55)" stroke-width="2"/>
+    <ellipse cx="34" cy="33" rx="24" ry="20" fill="rgba(255,255,255,.16)"/>
+    <text x="88" y="38" text-anchor="middle" font-size="${fs}" font-weight="900" fill="${d.txt}" font-family="Arial">${v}</text>
+    <text x="88" y="51" text-anchor="middle" font-size="7" font-weight="700" fill="${d.txt}" font-family="Arial" opacity=".92">PESOS</text>
+    <text x="60" y="61" text-anchor="middle" font-size="5.5" fill="${d.txt}" opacity=".82" font-family="Arial">REPÚBLICA ARGENTINA</text></svg>`;
+}
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+
+/* ---- Voz ---- */
+function hablar(t,alTerminar){
+  const avanzar=()=>{if(alTerminar){const f=alTerminar;alTerminar=null;setTimeout(f,650);}};
+  try{if(!window.speechSynthesis){if(alTerminar)setTimeout(avanzar,2600);return;}
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);u.lang='es-ES';u.rate=.95;u.pitch=1.2;
+    const v=speechSynthesis.getVoices().find(x=>x.lang.startsWith('es'));if(v)u.voice=v;
+    u.onend=avanzar;u.onerror=avanzar;
+    speechSynthesis.speak(u);
+    /* red de seguridad: si el navegador no avisa el fin, avanzamos igual */
+    setTimeout(avanzar,Math.max(2900,t.length*95));
+  }catch(e){if(alTerminar)setTimeout(avanzar,2600);}}
+if(window.speechSynthesis){speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices();}
+
+/* ---- Confeti ---- */
+function festejar(){const cont=document.getElementById('confetti');
+  const col=['#f5c542','#43c463','#ff6fae','#4dd0e1','#ff9e3d','#9b59d0'];
+  for(let i=0;i<60;i++){const c=document.createElement('div');c.className='confe';
+    c.style.left=Math.random()*100+'vw';c.style.background=pick(col);
+    c.style.borderRadius=Math.random()<.5?'50%':'2px';
+    c.style.animationDuration=(1+Math.random()*1.5)+'s';c.style.animationDelay=(Math.random()*.3)+'s';
+    cont.appendChild(c);setTimeout(()=>c.remove(),2700);}}
+function estrella(){estrellas++;}
+
+function fondo(){return `
+  <div class="cloud" style="width:70px;height:34px;top:8%;animation-duration:16s"></div>
+  <div class="cloud" style="width:110px;height:50px;top:22%;animation-duration:24s"></div>
+  <div class="cloud" style="width:60px;height:30px;top:60%;animation-duration:19s"></div>`;}
+
+function topbar(){return `<div class="topbar">
+  <button class="backbtn" onclick="menuGrado()">‹ Juegos</button>
+  <div class="who">👦 ${alumno.nombre||'Alumno'}</div>
+  ${alumno.grado==='3'?`<button class="helpbtn" onclick="mostrarAyuda()">💡 ¿Cómo se hace?</button>`:''}
+  <div class="starcount">⭐ ${estrellas}</div>
+</div>`;}
+
+/* ============================================================
+   1) BIENVENIDA  (frase de San Agustín)
+   ============================================================ */
+function bienvenida(){
+  speechSynthesis&&speechSynthesis.cancel();
+  app.innerHTML=fondo()+`
+  <div class="screen">
+    <div class="mascot">🦉</div>
+    <h1>MathFun FASTA</h1>
+    <div class="card">
+      <div class="frase">"Los números son el lenguaje con que Dios escribió el universo."
+        <span class="autor">— San Agustín</span></div>
+      <div class="sub" style="margin-top:8px">Vas a aprender a contar, agrupar y calcular descubriendo el orden hermoso de la creación. ✨</div>
+    </div>
+    <button class="bigbtn" style="background:var(--verde);margin-top:18px" onclick="ingreso()">
+      <span class="emo">👦</span><span>Soy Alumno · Empezar</span>
+    </button>
+    <div class="sub" style="opacity:.7;margin-top:14px">Colegio FASTA Juan Pablo II · Mendoza</div>
+  </div>`;
+}
+
+/* ============================================================
+   2) INGRESO DEL ALUMNO (nombre + nivel + grado)
+   ============================================================ */
+function ingreso(){
+  app.innerHTML=fondo()+`
+  <div class="screen" style="padding-top:24px">
+    <button class="backbtn" style="align-self:flex-start;margin:8px" onclick="bienvenida()">‹ Volver</button>
+    <h1 style="font-size:clamp(24px,6vw,38px)">¡Hola! ¿Quién sos?</h1>
+    <div class="card">
+      <div class="field">
+        <label>Tu nombre</label>
+        <input id="inNombre" placeholder="Escribí tu nombre" value="${alumno.nombre}">
+      </div>
+      <div class="field">
+        <label>Nivel</label>
+        <select id="inNivel" onchange="cambioNivel()">
+          <option value="">Elegí tu nivel</option>
+          <option value="inicial">Nivel Inicial (Jardín)</option>
+          <option value="primaria">Nivel Primario</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Grado / Sala</label>
+        <select id="inGrado">
+          <option value="">Primero elegí el nivel</option>
+        </select>
+      </div>
+      <button class="bigbtn" style="background:var(--naranja);width:min(360px,90vw);max-width:none;margin:16px auto 0" onclick="entrar()">
+        <span class="emo">🚀</span><span>Entrar a mis juegos</span>
+      </button>
+    </div>
+  </div>`;
+}
+function cambioNivel(){
+  const n=document.getElementById('inNivel').value;
+  const g=document.getElementById('inGrado');
+  if(n==='inicial'){
+    g.innerHTML=`<option value="">Elegí tu sala</option>
+      <option value="sala3">Sala de 3</option>
+      <option value="sala4">Sala de 4</option>
+      <option value="sala5">Sala de 5</option>`;
+  }else if(n==='primaria'){
+    g.innerHTML=`<option value="">Elegí tu grado</option>
+      <option value="1">1° Grado</option>
+      <option value="2">2° Grado</option>
+      <option value="3">3° Grado</option>`;
+  }else{
+    g.innerHTML=`<option value="">Primero elegí el nivel</option>`;
+  }
+}
+function entrar(){
+  const nombre=document.getElementById('inNombre').value.trim();
+  const nivel=document.getElementById('inNivel').value;
+  const grado=document.getElementById('inGrado').value;
+  if(!nombre){alert('Escribí tu nombre 😊');return;}
+  if(!nivel||!grado){alert('Elegí tu nivel y grado 😊');return;}
+  alumno={nombre,nivel,grado};
+  hablar(`Hola ${nombre}. Bienvenido a tus juegos.`);
+  menuGrado();
+}
+
+/* ============================================================
+   3) MENU DE JUEGOS SEGUN EL GRADO
+   ============================================================ */
+function menuGrado(){
+  speechSynthesis&&speechSynthesis.cancel();
+  if(alumno.nivel==='primaria'&&alumno.grado==='1'){
+    app.innerHTML=fondo()+`
+    <div class="topbar">
+      <button class="backbtn" onclick="ingreso()">‹ Salir</button>
+      <div class="who">👦 ${alumno.nombre}</div>
+      <div class="starcount">⭐ ${estrellas}</div>
+    </div>
+    <div class="screen">
+      <div class="mascot" style="font-size:52px">🦉</div>
+      <h1 style="font-size:clamp(24px,6vw,38px)">1° Grado</h1>
+      <div class="sub">Elegí un juego, ${alumno.nombre} 👇</div>
+      <div class="menugrid">
+      <button class="bigbtn" style="background:var(--verde)" onclick="jContar()">
+        <span class="emo">🍎</span><span>Contar colecciones<small>hasta 20</small></span></button>
+      <button class="bigbtn" style="background:var(--celeste)" onclick="jValor()">
+        <span class="emo">🔟</span><span>Dieces y unos<small>valor posicional</small></span></button>
+      <button class="bigbtn" style="background:var(--naranja)" onclick="jSumar()">
+        <span class="emo">➕</span><span>Sumar juntando<small>unir y agregar</small></span></button>
+      <button class="bigbtn" style="background:var(--violeta)" onclick="jRestar()">
+        <span class="emo">➖</span><span>Restar quitando<small>quitar</small></span></button>
+      <button class="bigbtn" style="background:var(--rosa)" onclick="jRecta()">
+        <span class="emo">🐸</span><span>Avanzar y retroceder<small>recta numérica</small></span></button>
+      <button class="bigbtn" style="background:var(--celeste)" onclick="jFiguras1()">
+        <span class="emo">🔷</span><span>Figuras<small>círculo, cuadrado…</small></span></button>
+      <button class="bigbtn" style="background:var(--dorado)" onclick="jReloj()">
+        <span class="emo">🕐</span><span>La hora<small>horas en punto</small></span></button>
+      <button class="bigbtn" style="background:var(--verde)" onclick="jCalendario()">
+        <span class="emo">📅</span><span>El calendario<small>ayer, hoy, mañana</small></span></button>
+      <button class="bigbtn" style="background:var(--naranja)" onclick="jDinero1()">
+        <span class="emo">💰</span><span>Armar dinero<small>billetes y monedas</small></span></button>
+      </div>
+    </div>`;
+  }else if(alumno.nivel==='primaria'&&alumno.grado==='2'){
+    app.innerHTML=fondo()+`
+    <div class="topbar">
+      <button class="backbtn" onclick="ingreso()">‹ Salir</button>
+      <div class="who">👦 ${alumno.nombre}</div>
+      <div class="starcount">⭐ ${estrellas}</div>
+    </div>
+    <div class="screen">
+      <div class="mascot" style="font-size:52px">🦉</div>
+      <h1 style="font-size:clamp(24px,6vw,38px)">2° Grado</h1>
+      <div class="sub">Elegí un juego, ${alumno.nombre} 👇</div>
+      <div class="menugrid">
+      <button class="bigbtn" style="background:var(--celeste)" onclick="jCentenas()">
+        <span class="emo">💯</span><span>Cienes, dieces y unos<small>hasta 1000</small></span></button>
+      <button class="bigbtn" style="background:var(--verde)" onclick="jSumaLlevada()">
+        <span class="emo">➕</span><span>Sumar con llevadas<small>reagrupar decenas</small></span></button>
+      <button class="bigbtn" style="background:var(--violeta)" onclick="jRestaPrestamo()">
+        <span class="emo">➖</span><span>Restar con préstamo<small>desagrupar</small></span></button>
+      <button class="bigbtn" style="background:var(--naranja)" onclick="jMultiplicar()">
+        <span class="emo">✖️</span><span>Multiplicar con arreglos<small>filas × columnas</small></span></button>
+      <button class="bigbtn" style="background:var(--rosa)" onclick="jSeries()">
+        <span class="emo">🔢</span><span>Anterior y posterior<small>y series numéricas</small></span></button>
+      <button class="bigbtn" style="background:var(--verde)" onclick="jDobles()">
+        <span class="emo">👐</span><span>Dobles y mitades<small>calcular rápido</small></span></button>
+      <button class="bigbtn" style="background:var(--celeste)" onclick="jFiguras2()">
+        <span class="emo">📐</span><span>Figuras<small>lados y vértices</small></span></button>
+      </div>
+      <button class="bigbtn" style="background:var(--dorado)" onclick="jRegla()">
+        <span class="emo">📏</span><span>Medir con regla<small>centímetros</small></span></button>
+      <button class="bigbtn" style="background:var(--rosa)" onclick="jMedir()">
+        <span class="emo">⚖️</span><span>Kilo y litro<small>peso y capacidad</small></span></button>
+    </div>`;
+  }else if(alumno.nivel==='primaria'&&alumno.grado==='3'){
+    app.innerHTML=fondo()+`
+    <div class="topbar">
+      <button class="backbtn" onclick="ingreso()">‹ Salir</button>
+      <div class="who">👦 ${alumno.nombre}</div>
+      <div class="starcount">⭐ ${estrellas}</div>
+    </div>
+    <div class="screen">
+      <div class="mascot" style="font-size:52px">🦉</div>
+      <h1 style="font-size:clamp(24px,6vw,38px)">3° Grado</h1>
+      <div class="sub">Elegí un juego, ${alumno.nombre} 👇</div>
+
+      <div class="ejehdr">🔢 Número y Operaciones</div>
+      <div class="ejesub">Explorar los números y las estrategias de cálculo.</div>
+      <div class="menugrid">
+      <button class="bigbtn" style="background:var(--azul)" onclick="jMiles()">
+        <span class="emo">🔢</span><span>Miles, cienes, dieces y unos<small>hasta 10.000</small></span></button>
+      <button class="bigbtn" style="background:var(--naranja)" onclick="jTablas()">
+        <span class="emo">✖️</span><span>Tablas de multiplicar<small>del 2 al 9</small></span></button>
+      <button class="bigbtn" style="background:var(--verde)" onclick="jDividir()">
+        <span class="emo">🧺</span><span>Dividir repartiendo<small>reparto en partes iguales</small></span></button>
+      <button class="bigbtn" style="background:var(--violeta)" onclick="jFracciones()">
+        <span class="emo">🍕</span><span>Fracciones<small>medio, cuarto, ¾</small></span></button>
+      </div>
+
+      <div class="ejehdr">📐 Geometría y Medida</div>
+      <div class="ejesub">Formas, figuras, espacios y mediciones.</div>
+      <div class="menugrid">
+      <button class="bigbtn" style="background:var(--celeste)" onclick="jRectas()">
+        <span class="emo">📐</span><span>Rectas<small>paralelas y perpendiculares</small></span></button>
+      <button class="bigbtn" style="background:var(--verde)" onclick="jDinero()">
+        <span class="emo">💵</span><span>Dinero<small>billetes y monedas</small></span></button>
+      <button class="bigbtn" style="background:var(--dorado)" onclick="jHora3()">
+        <span class="emo">⏰</span><span>La hora exacta<small>horas y minutos</small></span></button>
+      </div>
+
+      <div class="ejehdr">📊 Estadística y Probabilidad</div>
+      <div class="ejesub">Organizar datos, leer gráficos e interpretar información.</div>
+      <div class="menugrid">
+      <button class="bigbtn" style="background:var(--rosa)" onclick="jGrafico()">
+        <span class="emo">📊</span><span>Leer un gráfico<small>interpretar datos</small></span></button>
+      <button class="bigbtn" style="background:var(--violeta)" onclick="jProbable()">
+        <span class="emo">🎲</span><span>Seguro, posible, imposible<small>probabilidad</small></span></button>
+      </div>
+
+      <div class="fasta-nota">✝️ En el Juan Pablo II ordenamos los números y los datos para pensar con orden y buscar la verdad, como huellas del orden que Dios puso en todo.</div>
+    </div>`;
+  }else{
+    app.innerHTML=fondo()+`
+    <div class="screen">
+      <button class="backbtn" style="align-self:flex-start;margin:8px" onclick="ingreso()">‹ Volver</button>
+      <div class="mascot">🚧</div>
+      <h1 style="font-size:clamp(22px,6vw,34px)">¡Muy pronto!</h1>
+      <div class="card"><div class="sub">Los juegos de este nivel están en preparación.
+      Por ahora podés probar <b>1° Grado</b>. Volvé y elegí Nivel Primario · 1° Grado.</div></div>
+      <button class="bigbtn" style="background:var(--naranja);margin-top:16px" onclick="ingreso()">
+        <span class="emo">↩️</span><span>Elegir otro grado</span></button>
+    </div>`;
+  }
+}
+
+/* pantalla de cierre de nivel (Santo Tomás) */
+function cierreNivel(){
+  festejar();
+  const fraseChica = (alumno.nivel==='inicial')
+    ? '"Contar es descubrir el orden hermoso que Dios puso en todo."'
+    : '"El orden y la medida son huellas de Dios en el mundo." — Santo Tomás de Aquino';
+  app.innerHTML=fondo()+`
+  <div class="screen">
+    <div class="mascot">🏆</div>
+    <h1>¡Muy bien, ${alumno.nombre}!</h1>
+    <div class="card"><div class="frase">${fraseChica}</div>
+      <div class="sub">Ganaste ⭐ ${estrellas} estrellas</div></div>
+    <button class="bigbtn" style="background:var(--verde);margin-top:16px" onclick="menuGrado()">
+      <span class="emo">🎮</span><span>Seguir jugando</span></button>
+  </div>`;
+  hablar('¡Muy bien! El orden y la medida son huellas de Dios en el mundo.');
+}
+
+/* ============================================================
+   JUEGO A - CONTAR COLECCIONES (hasta 20)
+   ============================================================ */
+let c_meta,c_tipo,c_dentro,c_rondas;
+function jContar(){c_rondas=0;contarRonda();}
+function contarRonda(){
+  c_meta=rnd(5,15);c_tipo=pick(TIPOS);c_dentro=0;
+  render_contar('');hablar(`Poné ${c_meta} en el círculo. Tocá los de abajo y contá.`);
+}
+function render_contar(msg){
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="instr">Tocá los ${EMO[c_tipo]} para poner <b>${c_meta}</b> en el círculo</div>
+    <div class="setcircle">${c_dentro===0?'<span style="opacity:.6">círculo vacío</span>':
+      Array.from({length:c_dentro}).map(()=>`<span class="obj">${EMO[c_tipo]}</span>`).join('')}</div>
+    <div class="total">Hay ${c_dentro}</div>
+    <div class="sub">Tocá para agregar 👇</div>
+    <div class="bank">${Array.from({length:c_meta}).map(()=>`<div class="bankitem" onclick="contarAdd()"><span class="obj wiggle">${EMO[c_tipo]}</span></div>`).join('')}</div>
+    <button class="abtn" style="background:var(--rojo)" onclick="contarQuitar()">− Sacar uno</button>
+    <div class="msg ${msg?'ok':''}">${msg}</div>
+  </div>`;
+}
+function contarAdd(){if(c_dentro<c_meta){c_dentro++;hablar(String(c_dentro));render_contar('');
+  if(c_dentro===c_meta){estrella();festejar();render_contar('¡Muy bien! Contaste '+c_meta+' 🎉');
+    c_rondas++;
+    hablar('¡Muy bien! Contaste '+c_meta, ()=> c_rondas>=3?cierreNivel():contarRonda());}}}
+function contarQuitar(){if(c_dentro>0){c_dentro--;render_contar('');}}
+
+/* ============================================================
+   JUEGO B - VALOR POSICIONAL (armar un número con dieces y unos)
+   ============================================================ */
+let v_obj,v_d,v_u;
+function jValor(){v_obj=rnd(11,99);v_d=0;v_u=0;render_valor('');
+  hablar(`Armá el número ${v_obj}. Agregá dieces 🎒 y unos 🔵.`);}
+function render_valor(msg){
+  const total=v_d*10+v_u;
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">Armá el ${v_obj}</div>
+    <div class="instr">Agregá <b>dieces</b> 🎒 y <b>unos</b> 🔵 hasta llegar al número.</div>
+    <div class="cols">
+      <div class="col"><div class="coltitle">Dieces</div>
+        <div class="colbox">${Array.from({length:v_d}).map(()=>`<span class="bag">🎒</span>`).join('')}</div>
+        <div class="colval">${v_d} × 10 = ${v_d*10}</div></div>
+      <div class="col"><div class="coltitle">Unos</div>
+        <div class="colbox">${Array.from({length:v_u}).map(()=>`<span class="unit">🔵</span>`).join('')}</div>
+        <div class="colval">${v_u}</div></div>
+    </div>
+    <div class="total">Tenés: ${total}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--celeste)" onclick="vAdd('d')">+ Diez 🎒</button>
+      <button class="abtn" style="background:var(--verde)" onclick="vAdd('u')">+ Uno 🔵</button>
+      <button class="abtn" style="background:var(--rojo)" onclick="vDel()">− Quitar</button>
+    </div>
+    <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function vAdd(k){if(k==='d'&&v_d<9)v_d++;if(k==='u'&&v_u<9)v_u++;chequeoValor();}
+function vDel(){if(v_u>0)v_u--;else if(v_d>0)v_d--;render_valor('');}
+function chequeoValor(){const total=v_d*10+v_u;
+  if(total===v_obj){estrella();festejar();render_valor('¡Correcto! '+v_obj+' = '+v_d+' dieces y '+v_u+' unos 🎉');
+    hablar(`¡Muy bien! ${v_obj} son ${v_d} dieces y ${v_u} unos`, jValor);}
+  else if(total>v_obj)render_valor('Te pasaste. Tocá el botón rojo "Quitar" para sacar uno 😊');
+  else render_valor('');}
+
+/* ============================================================
+   JUEGO C - SUMAR JUNTANDO (dos grupos, elegir resultado)
+   ============================================================ */
+let s_a,s_b,s_ta;
+function jSumar(){s_a=rnd(2,10);s_b=rnd(2,10);s_ta=pick(TIPOS);render_sumar('');
+  hablar(`Contá todos juntos. ${s_a} más ${s_b}.`);}
+function render_sumar(msg){
+  const r=s_a+s_b;const ops=opciones(r,0,20);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${s_a} + ${s_b} = ?</div>
+    <div class="instr">Contá <b>todos</b> los ${EMO[s_ta]} juntos y tocá el número.</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+      <div class="setcircle" style="width:min(230px,42vw);border-color:var(--verde)">
+        ${Array.from({length:s_a}).map(()=>`<span class="obj">${EMO[s_ta]}</span>`).join('')}</div>
+      <div style="align-self:center;font-size:40px">➕</div>
+      <div class="setcircle" style="width:min(230px,42vw);border-color:var(--naranja)">
+        ${Array.from({length:s_b}).map(()=>`<span class="obj">${EMO[s_ta]}</span>`).join('')}</div>
+    </div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respSumar(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respSumar(n){if(n===s_a+s_b){estrella();festejar();render_sumar('¡Muy bien! 🎉');
+  hablar(`¡Correcto! ${s_a} más ${s_b} es ${s_a+s_b}`, jSumar);}
+  else{render_sumar('Contá primero un grupo, después el otro, y juntá todo 😊');hablar('Contá un grupo, después el otro, y sumá todo.');}}
+
+/* ============================================================
+   JUEGO D - RESTAR QUITANDO
+   ============================================================ */
+let d_a,d_b,d_ta;
+function jRestar(){d_a=rnd(6,15);d_b=rnd(1,d_a-1);d_ta=pick(TIPOS);render_restar('');
+  hablar(`Había ${d_a}. Se van ${d_b}. ¿Cuántos quedan?`);}
+function render_restar(msg){
+  const r=d_a-d_b;const ops=opciones(r,0,15);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${d_a} − ${d_b} = ?</div>
+    <div class="instr">Había ${d_a} ${EMO[d_ta]}, se van <b>${d_b}</b>. ¿Cuántos quedan?</div>
+    <div class="setcircle">
+      ${Array.from({length:d_a}).map((_,i)=>`<span class="obj" style="${i>=d_a-d_b?'opacity:.25;text-decoration:line-through':''}">${EMO[d_ta]}</span>`).join('')}
+    </div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respRestar(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respRestar(n){if(n===d_a-d_b){estrella();festejar();render_restar('¡Muy bien! 🎉');
+  hablar(`¡Correcto! Quedan ${d_a-d_b}`, jRestar);}
+  else{render_restar('Contá solo los que NO están tachados: esos son los que quedan 😊');hablar('Contá los que no están tachados.');}}
+
+/* ============================================================
+   JUEGO E (1°) - AVANZAR Y RETROCEDER (recta numérica)
+   Sentidos del currículo: avanzar / retroceder
+   ============================================================ */
+let rc_max,rc_pos,rc_ini,rc_paso,rc_dir,rc_obj,rc_listo;
+function jRecta(){
+  rc_max=15;rc_ini=rnd(2,10);rc_dir=Math.random()<.5?'avanzar':'retroceder';
+  if(rc_dir==='avanzar'){rc_paso=rnd(2,Math.min(5,rc_max-rc_ini));rc_obj=rc_ini+rc_paso;}
+  else{rc_paso=rnd(2,Math.min(5,rc_ini));rc_obj=rc_ini-rc_paso;}
+  rc_pos=rc_ini;rc_listo=false;render_recta('');
+  hablar(`Estás en el ${rc_ini}. ${rc_dir==='avanzar'?'Avanzá':'Retrocedé'} ${rc_paso} lugares con la rana.`);
+}
+function render_recta(msg){
+  let linea='';
+  for(let i=0;i<=rc_max;i++){
+    const aca=i===rc_pos;
+    linea+=`<div style="display:flex;flex-direction:column;align-items:center;min-width:30px">
+      <div style="height:34px;font-size:26px">${aca?'🐸':''}</div>
+      <div style="width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+        font-weight:800;font-size:15px;background:${i===rc_obj?'var(--dorado)':(aca?'var(--verde)':'rgba(255,255,255,.15)')};
+        color:${i===rc_obj||aca?'#0a2a52':'#fff'}">${i}</div></div>`;
+  }
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${rc_ini} ${rc_dir==='avanzar'?'+':'−'} ${rc_paso} = ?</div>
+    <div class="instr">La rana 🐸 está en el <b>${rc_ini}</b>. <b>${rc_dir==='avanzar'?'Avanzá':'Retrocedé'} ${rc_paso}</b> lugares (casillero dorado ⭐).</div>
+    <div style="display:flex;gap:2px;overflow-x:auto;padding:10px 4px;max-width:100%">${linea}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--rojo)" onclick="rcMover(-1)">◀ Retroceder</button>
+      <button class="abtn" style="background:var(--verde)" onclick="rcMover(1)">Avanzar ▶</button>
+    </div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function rcMover(d){if(rc_listo)return;
+  rc_pos=Math.max(0,Math.min(rc_max,rc_pos+d));
+  if(rc_pos===rc_obj){rc_listo=true;estrella();festejar();
+    render_recta(`¡Muy bien! Llegaste al ${rc_obj} 🎉`);
+    hablar(`¡Excelente! ${rc_ini} ${rc_dir==='avanzar'?'más':'menos'} ${rc_paso} es ${rc_obj}`, jRecta);}
+  else render_recta('');
+}
+
+/* ============================================================
+   JUEGO F (1°) - FIGURAS (reconocer la forma)
+   ============================================================ */
+const FIG1={
+  circulo:{nombre:'círculo',svg:'<div style="width:120px;height:120px;border-radius:50%;background:var(--celeste)"></div>'},
+  cuadrado:{nombre:'cuadrado',svg:'<div style="width:120px;height:120px;border-radius:10px;background:var(--naranja)"></div>'},
+  triangulo:{nombre:'triángulo',svg:'<div style="width:0;height:0;border-left:65px solid transparent;border-right:65px solid transparent;border-bottom:118px solid var(--violeta)"></div>'},
+  rectangulo:{nombre:'rectángulo',svg:'<div style="width:170px;height:92px;border-radius:10px;background:var(--verde)"></div>'}
+};
+let f1_key;
+function jFiguras1(){f1_key=pick(Object.keys(FIG1));render_fig1('');
+  hablar('¿Qué figura es esta?');}
+function render_fig1(msg){
+  const claves=Object.keys(FIG1).sort(()=>Math.random()-.5);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Qué figura es?</div>
+    <div style="display:flex;justify-content:center;align-items:center;height:150px;margin:6px 0">${FIG1[f1_key].svg}</div>
+    <div class="choicegrid">${claves.map(k=>`<button class="choice" style="font-size:20px" onclick="respFig1('${k}')">${FIG1[k].nombre}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respFig1(k){if(k===f1_key){estrella();festejar();
+  render_fig1(`¡Muy bien! Es un ${FIG1[f1_key].nombre} 🎉`);
+  hablar(`¡Correcto! Es un ${FIG1[f1_key].nombre}`, jFiguras1);}
+  else{render_fig1('Mirá los bordes: ¿son redondos o rectos? ¿cuántas puntas tiene? 😊');hablar('Mirá si los lados son redondos o rectos.');}}
+
+/* ============================================================
+   JUEGO G (1°) - LA HORA (leer horas en punto)
+   ============================================================ */
+let rl_h;
+function jReloj(){rl_h=rnd(1,12);render_reloj('');hablar('¿Qué hora es? Mirá la aguja corta.');}
+function relojSVG(h){
+  let nums='';
+  for(let i=1;i<=12;i++){
+    const ang=(i*30-90)*Math.PI/180;
+    const x=100+72*Math.cos(ang),y=100+72*Math.sin(ang);
+    nums+=`<text x="${x.toFixed(1)}" y="${(y+6).toFixed(1)}" text-anchor="middle" font-size="18" font-weight="800" fill="#0a2a52">${i}</text>`;
+  }
+  const ha=(h%12*30-90)*Math.PI/180;
+  const hx=100+45*Math.cos(ha),hy=100+45*Math.sin(ha);
+  return `<svg viewBox="0 0 200 200" width="180" height="180">
+    <circle cx="100" cy="100" r="94" fill="#fff" stroke="var(--azul)" stroke-width="6"/>
+    ${nums}
+    <line x1="100" y1="100" x2="100" y2="34" stroke="var(--rojo)" stroke-width="4" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="var(--azul)" stroke-width="8" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="7" fill="var(--azul)"/></svg>`;
+}
+function render_reloj(msg){
+  const set=new Set([rl_h]);while(set.size<4){set.add(rnd(1,12));}
+  const ops=[...set].sort((a,b)=>a-b);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Qué hora es?</div>
+    <div class="instr">La aguja <b>corta</b> marca la hora. Está <b>en punto</b>.</div>
+    <div style="display:flex;justify-content:center;margin:8px 0">${relojSVG(rl_h)}</div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice txt" onclick="respReloj(${n})">${n} en punto</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respReloj(n){if(n===rl_h){estrella();festejar();render_reloj(`¡Muy bien! Son las ${rl_h} en punto 🎉`);
+  hablar(`¡Correcto! Son las ${rl_h} en punto`, jReloj);}
+  else{render_reloj('Mirá la aguja CORTA: el número que señala es la hora 😊');hablar('La aguja corta te dice la hora.');}}
+
+/* ============================================================
+   JUEGO H (1°) - EL CALENDARIO (ayer, hoy, mañana)
+   ============================================================ */
+const DIAS=['lunes','martes','miércoles','jueves','viernes','sábado','domingo'];
+let ca_i,ca_tipo,ca_resp;
+function jCalendario(){ca_i=rnd(0,6);ca_tipo=pick(['mañana','ayer']);
+  ca_resp=ca_tipo==='mañana'?DIAS[(ca_i+1)%7]:DIAS[(ca_i+6)%7];
+  render_cal('');hablar(`Si hoy es ${DIAS[ca_i]}, ¿qué día es ${ca_tipo}?`);}
+function render_cal(msg){
+  const set=new Set([ca_resp]);while(set.size<4){set.add(pick(DIAS));}
+  const ops=[...set].sort(()=>Math.random()-.5);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">El calendario</div>
+    <div class="instr">Hoy es <b>${DIAS[ca_i]}</b>. ¿Qué día es <b>${ca_tipo}</b>?</div>
+    <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:8px 0">
+      ${DIAS.map((d,i)=>`<span style="padding:8px 6px;border-radius:10px;font-size:13px;font-weight:700;
+        background:${i===ca_i?'var(--verde)':'rgba(255,255,255,.15)'};color:#fff">${d}</span>`).join('')}</div>
+    <div class="choicegrid">${ops.map(d=>`<button class="choice" style="font-size:19px" onclick="respCal('${d}')">${d}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respCal(d){if(d===ca_resp){estrella();festejar();render_cal(`¡Muy bien! ${ca_tipo==='mañana'?'Mañana':'Ayer'} es ${ca_resp} 🎉`);
+  hablar(`¡Correcto! Es ${ca_resp}`, jCalendario);}
+  else{render_cal('Buscá el día de HOY y contá uno adelante (mañana) o uno atrás (ayer) 😊');hablar('Contá un día para adelante o para atrás.');}}
+
+/* ============================================================
+   SISTEMA DE AYUDA — "¿Cómo se hace?" (explicación para el alumno)
+   ============================================================ */
+let juegoActual='';
+const AYUDA={
+  dinero1:{t:'Armar dinero',p:[
+    'Arriba dice cuánta plata tenés que juntar. Escuchá el número.',
+    'Abajo hay billetes ($100, $50, $20, $10) y monedas ($5, $1).',
+    'Tocá un billete o una moneda y se suma a tu plata.',
+    'Escuchá cuánto tenés y cuánto te falta, e id agregando.',
+    'Truco: empezá por los billetes grandes y terminá con las monedas.',
+    'Si te pasás, tocá el botón rojo "Quitar" para sacar el último.']},
+  miles:{t:'Miles, cienes, dieces y unos',p:[
+    'Cada bloque vale distinto: 🧱 vale 1000, 📦 vale 100, 🎒 vale 10 y 🔵 vale 1.',
+    'Mirá el número que te piden y andá agregando bloques de a uno.',
+    'Ejemplo: para armar 2.345 → 2 miles 🧱, 3 cienes 📦, 4 dieces 🎒 y 5 unos 🔵.',
+    'Si te pasás, tocá el botón rojo "Quitar".']},
+  tablas:{t:'Tablas de multiplicar',p:[
+    'Multiplicar es sumar el mismo número varias veces.',
+    '4 × 3 significa: 3 + 3 + 3 + 3 (el 3, cuatro veces).',
+    'Contá los puntos de la pantalla: están en filas iguales.',
+    'Ejemplo: 4 filas de 3 puntos = 12 puntos → 4 × 3 = 12.']},
+  dividir:{t:'Dividir repartiendo',p:[
+    'Dividir es repartir en partes iguales.',
+    'Poné una figurita en cada canasta 🧺, y seguí dando vueltas hasta que no queden.',
+    'Después contá cuántas quedaron en UNA canasta: esa es la respuesta.',
+    'Ejemplo: 12 entre 3 canastas → 4 en cada una.']},
+  fracciones:{t:'Fracciones',p:[
+    'Una fracción es una parte de un entero dividido en partes iguales.',
+    'Mirá en cuántas partes se dividió la barra (el número de abajo).',
+    'Contá cuántas están pintadas (el número de arriba).',
+    'Ejemplo: 3 partes pintadas de 4 = tres cuartos (¾).']},
+  rectas:{t:'Rectas paralelas y perpendiculares',p:[
+    'Paralelas: dos rectas que van juntas y NUNCA se cruzan (como las vías del tren).',
+    'Perpendiculares: dos rectas que se cruzan formando una esquina de 90° (como una cruz +).',
+    'Mirá el dibujo: ¿se tocan o no?']},
+  dinero:{t:'Contar dinero',p:[
+    'Sumá todo el dinero que ves.',
+    'Truco: empezá por los billetes más grandes y después sumá los chicos y las monedas.',
+    'Ejemplo: $1000 + $500 + $100 = $1600.']},
+  hora3:{t:'La hora exacta',p:[
+    'El reloj tiene dos agujas: la CORTA (azul) marca la hora.',
+    'La aguja LARGA (roja) marca los minutos.',
+    'Si la larga está en el 12 es "en punto"; en el 3 es "y cuarto"; en el 6 es "y media"; en el 9 es "menos cuarto".',
+    'Ejemplo: corta en el 3 y larga en el 6 = las 3 y media (3:30).']},
+  grafico:{t:'Leer un gráfico',p:[
+    'Un gráfico ordena la información para leerla rápido.',
+    'Cada barra muestra cuántos hay de cada cosa: contá los cuadraditos o mirá el número al final.',
+    'La barra más larga es la que tiene MÁS; la más corta, la que tiene MENOS.',
+    'Leé bien la pregunta antes de responder.']},
+  probable:{t:'Seguro, posible o imposible',p:[
+    'Mirá qué hay dentro de la bolsa.',
+    'SEGURO: pasa siempre (si todas las bolitas son rojas, sacar roja es seguro).',
+    'IMPOSIBLE: no puede pasar (si no hay bolitas azules, sacar azul es imposible).',
+    'POSIBLE: puede pasar o no (si hay rojas y azules, sacar roja es posible).']}
+};
+function mostrarAyuda(){
+  const a=AYUDA[juegoActual];if(!a)return;
+  cerrarAyuda();
+  const d=document.createElement('div');d.className='ayuda-back';d.id='ayuda-overlay';
+  d.innerHTML=`<div class="ayuda-card">
+    <div style="font-size:clamp(19px,5vw,23px);font-weight:800;color:var(--azul);margin-bottom:12px">💡 ${a.t}</div>
+    <ol style="font-size:clamp(15px,4vw,17px);line-height:1.55;margin:0 0 16px 20px;padding:0">
+      ${a.p.map(x=>`<li style="margin-bottom:9px">${x}</li>`).join('')}</ol>
+    <button onclick="cerrarAyuda()" style="width:100%;background:var(--verde);color:#fff;border:none;border-radius:14px;padding:14px;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer">¡Entendí! 👍</button>
+  </div>`;
+  document.body.appendChild(d);
+  hablar(a.t+'. '+a.p.join(' '));
+}
+function cerrarAyuda(){const o=document.getElementById('ayuda-overlay');if(o)o.remove();if(window.speechSynthesis)speechSynthesis.cancel();}
+
+/* opciones de respuesta (incluye la correcta + distractores) */
+function opciones(correcta,min,max){
+  const set=new Set([correcta]);
+  while(set.size<4){const n=rnd(Math.max(min,correcta-3),Math.min(max,correcta+3));set.add(n);}
+  return [...set].sort((a,b)=>a-b);
+}
+
+/* ============================================================
+   ============  JUEGOS DE 2° GRADO  ==========================
+   ============================================================ */
+
+/* --- E) CIENES, DIECES Y UNOS (valor posicional hasta 1000) --- */
+let p_obj,p_c,p_d,p_u;
+function jCentenas(){p_obj=rnd(101,999);p_c=0;p_d=0;p_u=0;render_cent('');
+  hablar(`Armá el número ${p_obj}. Agregá cienes, dieces y unos.`);}
+function render_cent(msg){
+  const total=p_c*100+p_d*10+p_u;
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">Armá el ${p_obj}</div>
+    <div class="instr">Agregá <b>cienes</b> 📦, <b>dieces</b> 🎒 y <b>unos</b> 🔵.</div>
+    <div class="cols">
+      <div class="col"><div class="coltitle">Cienes</div>
+        <div class="colbox">${Array.from({length:p_c}).map(()=>`<span class="bag">📦</span>`).join('')}</div>
+        <div class="colval">${p_c} × 100 = ${p_c*100}</div></div>
+      <div class="col"><div class="coltitle">Dieces</div>
+        <div class="colbox">${Array.from({length:p_d}).map(()=>`<span class="bag">🎒</span>`).join('')}</div>
+        <div class="colval">${p_d} × 10 = ${p_d*10}</div></div>
+      <div class="col"><div class="coltitle">Unos</div>
+        <div class="colbox">${Array.from({length:p_u}).map(()=>`<span class="unit">🔵</span>`).join('')}</div>
+        <div class="colval">${p_u}</div></div>
+    </div>
+    <div class="total">Tenés: ${total}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--rosa)" onclick="pAdd('c')">+ Cien 📦</button>
+      <button class="abtn" style="background:var(--celeste)" onclick="pAdd('d')">+ Diez 🎒</button>
+      <button class="abtn" style="background:var(--verde)" onclick="pAdd('u')">+ Uno 🔵</button>
+      <button class="abtn" style="background:var(--rojo)" onclick="pDel()">− Quitar</button>
+    </div>
+    <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function pAdd(k){if(k==='c'&&p_c<9)p_c++;if(k==='d'&&p_d<9)p_d++;if(k==='u'&&p_u<9)p_u++;chequeoCent();}
+function pDel(){if(p_u>0)p_u--;else if(p_d>0)p_d--;else if(p_c>0)p_c--;render_cent('');}
+function chequeoCent(){const total=p_c*100+p_d*10+p_u;
+  if(total===p_obj){estrella();festejar();
+    render_cent(`¡Correcto! ${p_obj} = ${p_c} cienes, ${p_d} dieces y ${p_u} unos 🎉`);
+    hablar(`¡Muy bien! ${p_obj}`, jCentenas);}
+  else if(total>p_obj)render_cent('Te pasaste. Tocá el botón rojo "Quitar" para sacar uno 😊');
+  else render_cent('');}
+
+/* --- F) SUMAR CON LLEVADAS (reagrupamiento de decenas) --- */
+let sl_n1,sl_n2,sl_u,sl_d,sl_listo;
+function jSumaLlevada(){sl_n1=rnd(6,9);sl_n2=rnd(6,9);sl_u=0;sl_d=0;sl_listo=false;render_sl('');
+  hablar(`Sumá ${sl_n1} más ${sl_n2}. Agregá unidades. Al juntar diez, se hace una bolsa.`);}
+function render_sl(msg){
+  const total=sl_d*10+sl_u,obj=sl_n1+sl_n2;
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${sl_n1} + ${sl_n2} = ?</div>
+    <div class="instr">Agregá unidades 🔵. Al llegar a <b>10</b>, se agrupan en una bolsa 🎒 (llevo una decena).</div>
+    <div class="cols">
+      <div class="col"><div class="coltitle">Decenas</div>
+        <div class="colbox">${Array.from({length:sl_d}).map(()=>`<span class="bag">🎒</span>`).join('')}</div>
+        <div class="colval">${sl_d} × 10 = ${sl_d*10}</div></div>
+      <div class="col"><div class="coltitle">Unidades</div>
+        <div class="colbox">${Array.from({length:sl_u}).map(()=>`<span class="unit">🔵</span>`).join('')}</div>
+        <div class="colval">${sl_u}</div></div>
+    </div>
+    <div class="total">Total: ${total}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--verde)" onclick="slAdd()">+ Agregar</button>
+      <button class="abtn" style="background:var(--rojo)" onclick="slQuit()">− Sacar</button>
+    </div>
+    <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function slAdd(){if(sl_listo)return;const obj=sl_n1+sl_n2;sl_u++;
+  if(sl_u===10){sl_u=0;sl_d++;hablar('¡Diez! Llevo una decena.');}
+  const total=sl_d*10+sl_u;
+  if(total===obj){sl_listo=true;estrella();festejar();
+    render_sl(`¡Correcto! ${sl_n1} + ${sl_n2} = ${obj} 🎉`);
+    hablar(`¡Muy bien! ${sl_n1} más ${sl_n2} es ${obj}`, jSumaLlevada);}
+  else if(total>obj)render_sl('Te pasaste. Tocá "Sacar" para quitar una unidad 😊');else render_sl('');}
+function slQuit(){if(sl_listo)return;if(sl_u>0)sl_u--;else if(sl_d>0){sl_d--;sl_u=9;}render_sl('');}
+
+/* --- G) RESTAR CON PRESTAMO (desagrupar una decena) --- */
+let rp_n1,rp_n2,rp_d,rp_u,rp_quit,rp_listo;
+function jRestaPrestamo(){const dec=rnd(1,2),uni=rnd(0,4);
+  rp_n1=dec*10+uni;rp_n2=Math.min(rnd(3,8),rp_n1-1);
+  rp_d=dec;rp_u=uni;rp_quit=0;rp_listo=false;render_rp('');
+  hablar(`Restá ${rp_n1} menos ${rp_n2}. Si no alcanzan las unidades, tocá una bolsa para romperla en diez.`);}
+function render_rp(msg){
+  const total=rp_d*10+rp_u;
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${rp_n1} − ${rp_n2} = ?</div>
+    <div class="instr">Sacá <b>${rp_n2}</b> unidades. Si no alcanzan, tocá una bolsa 🎒 para romperla en 10.</div>
+    <div class="cols">
+      <div class="col"><div class="coltitle">Decenas (tocá para romper)</div>
+        <div class="colbox">${Array.from({length:rp_d}).map(()=>`<span class="bag" onclick="rpRomper()">🎒</span>`).join('')}</div>
+        <div class="colval">${rp_d} × 10</div></div>
+      <div class="col"><div class="coltitle">Unidades</div>
+        <div class="colbox">${Array.from({length:rp_u}).map(()=>`<span class="unit">🔵</span>`).join('')}</div>
+        <div class="colval">${rp_u}</div></div>
+    </div>
+    <div class="total">Quedan: ${total} · Sacaste ${rp_quit}/${rp_n2}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--rojo)" onclick="rpQuitar()">− Sacar unidad</button>
+      <button class="abtn" style="background:var(--naranja)" onclick="rpRomper()">Romper bolsa 🎒</button>
+    </div>
+    <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function rpRomper(){if(rp_listo)return;if(rp_d>0){rp_d--;rp_u+=10;hablar('Rompiste una bolsa. Hay diez unidades más.');render_rp('');}}
+function rpQuitar(){if(rp_listo)return;
+  if(rp_u===0){render_rp('No quedan unidades sueltas. Tocá una bolsa 🎒 para romperla en 10 😊');hablar('No quedan unidades. Tocá una bolsa para romperla en diez.');return;}
+  rp_u--;rp_quit++;
+  if(rp_quit===rp_n2){rp_listo=true;estrella();festejar();const rest=rp_d*10+rp_u;
+    render_rp(`¡Correcto! ${rp_n1} − ${rp_n2} = ${rest} 🎉`);
+    hablar(`¡Muy bien! ${rp_n1} menos ${rp_n2} es ${rest}`, jRestaPrestamo);}
+  else render_rp('');}
+
+/* --- H) MULTIPLICAR CON ARREGLOS (filas x columnas) --- */
+let mu_f,mu_c,mu_ta;
+function jMultiplicar(){mu_f=rnd(2,5);mu_c=rnd(2,5);mu_ta=pick(TIPOS);render_mult('');
+  hablar(`Hay ${mu_f} filas con ${mu_c} en cada una. ¿Cuántos hay en total?`);}
+function render_mult(msg){
+  const r=mu_f*mu_c;const ops=opciones(r,1,30);
+  let grilla='';
+  for(let f=0;f<mu_f;f++){grilla+='<div style="display:flex;justify-content:center;gap:4px">';
+    for(let c=0;c<mu_c;c++)grilla+=`<span class="obj" style="font-size:32px">${EMO[mu_ta]}</span>`;
+    grilla+='</div>';}
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${mu_f} × ${mu_c} = ?</div>
+    <div class="instr"><b>${mu_f}</b> filas de <b>${mu_c}</b>. Contá todos los ${EMO[mu_ta]}.</div>
+    <div style="background:rgba(255,255,255,.1);border-radius:16px;padding:12px;margin:8px 0">${grilla}</div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respMult(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respMult(n){if(n===mu_f*mu_c){estrella();festejar();render_mult('¡Muy bien! 🎉');
+  hablar(`¡Correcto! ${mu_f} por ${mu_c} es ${mu_f*mu_c}`, jMultiplicar);}
+  else{render_mult('Contá una fila y sumala tantas veces como filas hay 😊');hablar('Contá una fila y sumala por cada fila.');}}
+
+/* ============================================================
+   JUEGO I (2°) - ANTERIOR / POSTERIOR Y SERIES
+   ============================================================ */
+let se_tipo,se_n,se_paso,se_serie,se_falta,se_resp;
+function jSeries(){
+  se_tipo=pick(['anterior','posterior','serie']);
+  if(se_tipo==='serie'){
+    se_paso=pick([2,5,10]);const ini=rnd(1,6)*se_paso;
+    se_serie=[ini,ini+se_paso,ini+2*se_paso,ini+3*se_paso];
+    se_falta=rnd(1,2);se_resp=se_serie[se_falta];
+    hablar(`Completá la serie que va de ${se_paso} en ${se_paso}.`);
+  }else{
+    se_n=rnd(20,980);se_resp=se_tipo==='anterior'?se_n-1:se_n+1;
+    hablar(`¿Qué número va ${se_tipo==='anterior'?'justo antes':'justo después'} del ${se_n}?`);
+  }
+  render_series('');
+}
+function render_series(msg){
+  let cuerpo='',ops;
+  if(se_tipo==='serie'){
+    cuerpo=`<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px 0">
+      ${se_serie.map((v,i)=>`<div style="min-width:70px;padding:14px 8px;border-radius:14px;font-size:26px;font-weight:800;
+        background:${i===se_falta?'var(--dorado)':'rgba(255,255,255,.15)'};color:${i===se_falta?'#0a2a52':'#fff'}">
+        ${i===se_falta?'?':v}</div>`).join('')}</div>`;
+    ops=opciones(se_resp,0,999);
+  }else{
+    cuerpo=`<div style="display:flex;gap:10px;justify-content:center;align-items:center;margin:10px 0">
+      ${se_tipo==='anterior'?'<div style="font-size:40px">❓</div>':''}
+      <div style="min-width:90px;padding:16px;border-radius:16px;background:var(--verde);font-size:34px;font-weight:800">${se_n}</div>
+      ${se_tipo==='posterior'?'<div style="font-size:40px">❓</div>':''}</div>`;
+    ops=opciones(se_resp,0,999);
+  }
+  const titulo=se_tipo==='serie'?`Serie de ${se_paso} en ${se_paso}`
+    :(se_tipo==='anterior'?'¿Cuál va justo ANTES?':'¿Cuál va justo DESPUÉS?');
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${titulo}</div>
+    <div class="instr">${se_tipo==='serie'?'¿Qué número falta en el casillero dorado?':'Tocá el número correcto.'}</div>
+    ${cuerpo}
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respSeries(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respSeries(n){if(n===se_resp){estrella();festejar();render_series('¡Muy bien! 🎉');
+  hablar(`¡Correcto! Es el ${se_resp}`, jSeries);}
+  else{const h=se_tipo==='anterior'?'El ANTERIOR es uno menos: restá 1 al número 😊'
+      :se_tipo==='posterior'?'El POSTERIOR es uno más: sumá 1 al número 😊'
+      :'Mirá de cuánto en cuánto sube (de 2, de 5 o de 10) y seguí ese salto 😊';
+    render_series(h);
+    hablar(se_tipo==='serie'?'Mirá de cuánto en cuánto sube la serie.':(se_tipo==='anterior'?'El anterior es uno menos.':'El posterior es uno más.'));}}
+
+/* ============================================================
+   JUEGO J (2°) - DOBLES Y MITADES
+   ============================================================ */
+let db_tipo,db_n,db_resp,db_ta;
+function jDobles(){db_tipo=pick(['doble','mitad']);db_ta=pick(TIPOS);
+  if(db_tipo==='doble'){db_n=rnd(2,10);db_resp=db_n*2;hablar(`¿Cuál es el doble de ${db_n}?`);}
+  else{db_n=rnd(2,10)*2;db_resp=db_n/2;hablar(`¿Cuál es la mitad de ${db_n}?`);}
+  render_dobles('');
+}
+function render_dobles(msg){
+  const ops=opciones(db_resp,0,25);
+  let visual='';
+  if(db_tipo==='doble'){
+    visual=`<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <div class="setcircle" style="width:min(200px,40vw);border-color:var(--verde)">
+        ${Array.from({length:db_n}).map(()=>`<span class="obj">${EMO[db_ta]}</span>`).join('')}</div>
+      <div style="align-self:center;font-size:34px">➕</div>
+      <div class="setcircle" style="width:min(200px,40vw);border-color:var(--naranja)">
+        ${Array.from({length:db_n}).map(()=>`<span class="obj">${EMO[db_ta]}</span>`).join('')}</div></div>`;
+  }else{
+    visual=`<div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap">
+      <div class="setcircle" style="width:min(210px,44vw);border-color:var(--celeste)">
+        ${Array.from({length:db_n}).map((_,i)=>`<span class="obj" style="${i>=db_n/2?'opacity:.9':''}">${EMO[db_ta]}</span>`).join('')}</div>
+      <div style="font-size:34px">➗2</div></div>`;
+  }
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${db_tipo==='doble'?'El doble de '+db_n:'La mitad de '+db_n} = ?</div>
+    <div class="instr">${db_tipo==='doble'?'El doble es la misma cantidad <b>dos veces</b>.':'La mitad es repartir en <b>dos partes iguales</b>.'}</div>
+    ${visual}
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respDobles(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respDobles(n){if(n===db_resp){estrella();festejar();render_dobles('¡Muy bien! 🎉');
+  hablar(`¡Correcto! ${db_tipo==='doble'?'El doble':'La mitad'} de ${db_n} es ${db_resp}`, jDobles);}
+  else{const h=db_tipo==='doble'?'El DOBLE es sumar el número con sí mismo: '+db_n+' + '+db_n+' 😊'
+      :'La MITAD es repartir en dos partes iguales 😊';
+    render_dobles(h);
+    hablar(db_tipo==='doble'?'El doble es el número más el mismo número.':'La mitad es repartir en dos partes iguales.');}}
+
+/* ============================================================
+   JUEGO K (2°) - FIGURAS POR SUS LADOS Y VÉRTICES
+   ============================================================ */
+const FIG2={
+  triangulo:{nombre:'triángulo',lados:3,vertices:3,
+    svg:'<div style="width:130px;height:118px;background:var(--violeta);clip-path:polygon(50% 0,100% 100%,0 100%)"></div>'},
+  cuadrado:{nombre:'cuadrado',lados:4,vertices:4,
+    svg:'<div style="width:118px;height:118px;border-radius:8px;background:var(--naranja)"></div>'},
+  rectangulo:{nombre:'rectángulo',lados:4,vertices:4,
+    svg:'<div style="width:168px;height:96px;border-radius:8px;background:var(--verde)"></div>'},
+  pentagono:{nombre:'pentágono',lados:5,vertices:5,
+    svg:'<div style="width:126px;height:120px;background:var(--celeste);clip-path:polygon(50% 0,100% 38%,82% 100%,18% 100%,0 38%)"></div>'}
+};
+let f2_key,f2_pregunta,f2_resp;
+function jFiguras2(){f2_key=pick(Object.keys(FIG2));f2_pregunta=pick(['lados','vertices']);
+  f2_resp=FIG2[f2_key][f2_pregunta];render_fig2('');
+  hablar(`¿Cuántos ${f2_pregunta==='lados'?'lados':'vértices'} tiene este ${FIG2[f2_key].nombre}?`);}
+function render_fig2(msg){
+  const ops=[3,4,5,6];
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">El ${FIG2[f2_key].nombre}</div>
+    <div class="instr">¿Cuántos <b>${f2_pregunta==='lados'?'lados':'vértices (puntas)'}</b> tiene?</div>
+    <div style="display:flex;justify-content:center;align-items:center;height:150px;margin:6px 0">${FIG2[f2_key].svg}</div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respFig2(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respFig2(n){if(n===f2_resp){estrella();festejar();
+  render_fig2(`¡Muy bien! El ${FIG2[f2_key].nombre} tiene ${f2_resp} ${f2_pregunta} 🎉`);
+  hablar(`¡Correcto! Tiene ${f2_resp} ${f2_pregunta}`, jFiguras2);}
+  else{render_fig2('Contá los LADOS (líneas rectas) o las PUNTAS, una por una 😊');hablar('Contá las puntas una por una.');}}
+
+/* ============================================================
+   JUEGO L (2°) - MEDIR CON REGLA (centímetros)
+   ============================================================ */
+let rg_len;
+function jRegla(){rg_len=rnd(3,14);render_regla('');
+  hablar('¿Cuántos centímetros mide la barra? Mirá dónde termina.');}
+function render_regla(msg){
+  const cm=15,px=20;let ticks='';
+  for(let i=0;i<=cm;i++){
+    ticks+=`<div style="position:absolute;left:${i*px}px;top:0;width:2px;height:14px;background:#0a2a52"></div>`;
+    ticks+=`<div style="position:absolute;left:${i*px-4}px;top:16px;font-size:10px;font-weight:700;color:#0a2a52">${i}</div>`;
+  }
+  const ops=opciones(rg_len,1,15);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Cuánto mide?</div>
+    <div class="instr">La barra empieza en el <b>0</b>. Mirá en qué número <b>termina</b>.</div>
+    <div style="width:${cm*px}px;max-width:94vw;overflow-x:auto;margin:14px auto">
+      <div style="height:26px;width:${rg_len*px}px;background:var(--rosa);border-radius:6px"></div>
+      <div style="position:relative;height:34px;width:${cm*px}px;background:#ffe08a;border-radius:6px;margin-top:5px">${ticks}</div>
+    </div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respRegla(${n})">${n} cm</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respRegla(n){if(n===rg_len){estrella();festejar();render_regla(`¡Muy bien! Mide ${rg_len} cm 🎉`);
+  hablar(`¡Correcto! Mide ${rg_len} centímetros`, jRegla);}
+  else{render_regla('Seguí la barra desde el 0 y mirá el número donde TERMINA 😊');hablar('Mirá en qué número termina la barra.');}}
+
+/* ============================================================
+   JUEGO M (2°) - KILO Y LITRO (peso y capacidad)
+   ============================================================ */
+const ITEMS=[
+  {e:'🍎',n:'las manzanas',u:'kilo'},{e:'🥛',n:'la leche',u:'litro'},
+  {e:'🍚',n:'el arroz',u:'kilo'},{e:'💧',n:'el agua',u:'litro'},
+  {e:'🍌',n:'las bananas',u:'kilo'},{e:'🧃',n:'el jugo',u:'litro'},
+  {e:'🥔',n:'las papas',u:'kilo'},{e:'🫗',n:'el aceite',u:'litro'}
+];
+let md_it;
+function jMedir(){md_it=pick(ITEMS);render_medir('');
+  hablar(`¿En qué medimos ${md_it.n}? ¿En kilos o en litros?`);}
+function render_medir(msg){
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿En qué se mide?</div>
+    <div class="instr">El <b>kilo</b> ⚖️ mide el <b>peso</b>. El <b>litro</b> 🧴 mide lo <b>líquido</b> (capacidad).</div>
+    <div style="font-size:90px;margin:6px 0">${md_it.e}</div>
+    <div style="font-size:24px;font-weight:800;margin-bottom:6px">${md_it.n}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--naranja)" onclick="respMedir('kilo')">⚖️ Kilo</button>
+      <button class="abtn" style="background:var(--celeste)" onclick="respMedir('litro')">🧴 Litro</button>
+    </div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respMedir(u){if(u===md_it.u){estrella();festejar();
+  render_medir(`¡Muy bien! ${md_it.n.charAt(0).toUpperCase()+md_it.n.slice(1)} se mide en ${md_it.u}s 🎉`);
+  hablar(`¡Correcto! Se mide en ${md_it.u}s`, jMedir);}
+  else{render_medir('Si se puede verter, es líquido → LITRO. Si se pesa → KILO 😊');hablar('Lo líquido se mide en litros; lo que pesa, en kilos.');}}
+
+/* ============================================================
+   ============  JUEGOS DE 3° GRADO — Tanda 1  ================
+   ============  Número y operaciones  ========================
+   ============================================================ */
+
+/* --- N) MILES, CIENES, DIECES Y UNOS (hasta 10.000) --- */
+let ml_obj,ml_m,ml_c,ml_d,ml_u;
+function jMiles(){juegoActual='miles';ml_obj=rnd(1001,9999);ml_m=0;ml_c=0;ml_d=0;ml_u=0;render_miles('');
+  hablar(`Armá el número ${ml_obj}. Agregá miles, cienes, dieces y unos.`);}
+function render_miles(msg){
+  const total=ml_m*1000+ml_c*100+ml_d*10+ml_u;
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">Armá el ${ml_obj}</div>
+    <div class="instr">Agregá <b>miles</b> 🧱, <b>cienes</b> 📦, <b>dieces</b> 🎒 y <b>unos</b> 🔵.</div>
+    <div class="cols">
+      <div class="col"><div class="coltitle">Miles</div>
+        <div class="colbox">${Array.from({length:ml_m}).map(()=>`<span class="bag">🧱</span>`).join('')}</div>
+        <div class="colval">${ml_m} × 1000 = ${ml_m*1000}</div></div>
+      <div class="col"><div class="coltitle">Cienes</div>
+        <div class="colbox">${Array.from({length:ml_c}).map(()=>`<span class="bag">📦</span>`).join('')}</div>
+        <div class="colval">${ml_c} × 100 = ${ml_c*100}</div></div>
+      <div class="col"><div class="coltitle">Dieces</div>
+        <div class="colbox">${Array.from({length:ml_d}).map(()=>`<span class="bag">🎒</span>`).join('')}</div>
+        <div class="colval">${ml_d} × 10 = ${ml_d*10}</div></div>
+      <div class="col"><div class="coltitle">Unos</div>
+        <div class="colbox">${Array.from({length:ml_u}).map(()=>`<span class="unit">🔵</span>`).join('')}</div>
+        <div class="colval">${ml_u}</div></div>
+    </div>
+    <div class="total">Tenés: ${total}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--azul)" onclick="mlAdd('m')">+ Mil 🧱</button>
+      <button class="abtn" style="background:var(--rosa)" onclick="mlAdd('c')">+ Cien 📦</button>
+      <button class="abtn" style="background:var(--celeste)" onclick="mlAdd('d')">+ Diez 🎒</button>
+      <button class="abtn" style="background:var(--verde)" onclick="mlAdd('u')">+ Uno 🔵</button>
+      <button class="abtn" style="background:var(--rojo)" onclick="mlDel()">− Quitar</button>
+    </div>
+    <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function mlAdd(k){if(k==='m'&&ml_m<9)ml_m++;if(k==='c'&&ml_c<9)ml_c++;if(k==='d'&&ml_d<9)ml_d++;if(k==='u'&&ml_u<9)ml_u++;chequeoMiles();}
+function mlDel(){if(ml_u>0)ml_u--;else if(ml_d>0)ml_d--;else if(ml_c>0)ml_c--;else if(ml_m>0)ml_m--;render_miles('');}
+function chequeoMiles(){const total=ml_m*1000+ml_c*100+ml_d*10+ml_u;
+  if(total===ml_obj){estrella();festejar();
+    render_miles(`¡Correcto! ${ml_obj} = ${ml_m} miles, ${ml_c} cienes, ${ml_d} dieces y ${ml_u} unos 🎉`);
+    hablar(`¡Muy bien! ${ml_obj}`, jMiles);}
+  else if(total>ml_obj)render_miles('Te pasaste. Tocá el botón rojo "Quitar" para sacar uno 😊');
+  else render_miles('');}
+
+/* --- O) TABLAS DE MULTIPLICAR --- */
+let tb_a,tb_b;
+function jTablas(){juegoActual='tablas';tb_a=rnd(2,9);tb_b=rnd(2,9);render_tablas('');
+  hablar(`¿Cuánto es ${tb_a} por ${tb_b}?`);}
+function render_tablas(msg){
+  const r=tb_a*tb_b;const ops=opciones(r,1,90);
+  let grilla='';
+  for(let f=0;f<tb_a;f++){grilla+='<div style="display:flex;justify-content:center;gap:3px">';
+    for(let c=0;c<tb_b;c++)grilla+=`<span style="width:14px;height:14px;border-radius:50%;background:var(--dorado);display:inline-block"></span>`;
+    grilla+='</div>';}
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${tb_a} × ${tb_b} = ?</div>
+    <div class="instr">Es sumar <b>${tb_b}</b>, <b>${tb_a}</b> veces. Contá los puntos si querés 👇</div>
+    <div style="background:rgba(255,255,255,.1);border-radius:16px;padding:12px;margin:8px 0;display:flex;flex-direction:column;gap:3px">${grilla}</div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respTablas(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respTablas(n){if(n===tb_a*tb_b){estrella();festejar();render_tablas('¡Muy bien! 🎉');
+  hablar(`¡Correcto! ${tb_a} por ${tb_b} es ${tb_a*tb_b}`, jTablas);}
+  else{render_tablas('Contá TODOS los puntos: son las filas sumadas 😊');hablar('Contá todos los puntos.');}}
+
+/* --- P) DIVIDIR REPARTIENDO (reparto en partes iguales) --- */
+let dv_total,dv_grupos,dv_cada,dv_ta;
+function jDividir(){juegoActual='dividir';dv_grupos=rnd(2,4);dv_cada=rnd(2,5);dv_total=dv_grupos*dv_cada;dv_ta=pick(TIPOS);
+  render_dividir('');
+  hablar(`Repartí ${dv_total} ${EMO[dv_ta]} entre ${dv_grupos} canastas. ¿Cuántas van en cada una?`);}
+function render_dividir(msg){
+  const ops=opciones(dv_cada,1,10);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">${dv_total} ÷ ${dv_grupos} = ?</div>
+    <div class="instr">Repartí los <b>${dv_total}</b> ${EMO[dv_ta]} en <b>${dv_grupos}</b> canastas 🧺, en partes iguales.</div>
+    <div class="setcircle" style="border-color:var(--verde)">
+      ${Array.from({length:dv_total}).map(()=>`<span class="obj">${EMO[dv_ta]}</span>`).join('')}</div>
+    <div style="display:flex;gap:14px;justify-content:center;margin:8px 0;font-size:44px">
+      ${Array.from({length:dv_grupos}).map(()=>`<span>🧺</span>`).join('')}</div>
+    <div class="instr">¿Cuántas en <b>cada</b> canasta?</div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respDividir(${n})">${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respDividir(n){if(n===dv_cada){estrella();festejar();
+  render_dividir(`¡Muy bien! ${dv_total} entre ${dv_grupos} son ${dv_cada} en cada una 🎉`);
+  hablar(`¡Correcto! ${dv_cada} en cada canasta`, jDividir);}
+  else{render_dividir('Poné una en cada canasta por vez, hasta que no queden 😊');hablar('Repartí de a una en cada canasta.');}}
+
+/* --- Q) FRACCIONES (medio, cuarto, tres cuartos) --- */
+const FRAC=[
+  {p:2,s:1,label:'un medio'},
+  {p:4,s:1,label:'un cuarto'},
+  {p:4,s:3,label:'tres cuartos'},
+  {p:3,s:1,label:'un tercio'},
+  {p:3,s:2,label:'dos tercios'}
+];
+let fr_it;
+function jFracciones(){juegoActual='fracciones';fr_it=pick(FRAC);render_frac('');
+  hablar('¿Qué fracción está pintada?');}
+function render_frac(msg){
+  const celdas=Array.from({length:fr_it.p}).map((_,i)=>
+    `<div style="flex:1;height:80px;border:3px solid #fff;background:${i<fr_it.s?'var(--naranja)':'rgba(255,255,255,.12)'}"></div>`).join('');
+  const set=new Set([fr_it.label]);
+  while(set.size<4){set.add(pick(FRAC).label);}
+  const ops=[...set].sort(()=>Math.random()-.5);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">Fracciones</div>
+    <div class="instr">La barra está dividida en <b>${fr_it.p}</b> partes iguales. ¿Qué parte está <b>pintada</b>?</div>
+    <div style="display:flex;width:min(320px,86vw);border-radius:12px;overflow:hidden;margin:12px auto">${celdas}</div>
+    <div class="choicegrid">${ops.map(l=>`<button class="choice" style="font-size:18px" onclick="respFrac('${l}')">${l}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respFrac(l){if(l===fr_it.label){estrella();festejar();
+  render_frac(`¡Muy bien! Es ${fr_it.label} (${fr_it.s}/${fr_it.p}) 🎉`);
+  hablar(`¡Correcto! Es ${fr_it.label}`, jFracciones);}
+  else{render_frac('Contá las partes PINTADAS y en cuántas se dividió el entero 😊');hablar('Contá las partes pintadas y el total de partes.');}}
+
+/* ============================================================
+   ============  JUEGOS DE 3° GRADO — Tanda 2  ================
+   ============  Geometría · Dinero · Tiempo  =================
+   ============================================================ */
+
+/* --- R) RECTAS: PARALELAS Y PERPENDICULARES --- */
+let rt_tipo,rt_ang;
+function jRectas(){juegoActual='rectas';rt_tipo=pick(['paralelas','perpendiculares']);rt_ang=pick([0,30,45,90,120]);
+  render_rectas('');hablar('¿Cómo son estas rectas? ¿Paralelas o perpendiculares?');}
+function rectasSVG(tipo,ang){
+  const Cx=110,Cy=85,L=70,rad=Math.PI/180;
+  const dx=Math.cos(ang*rad),dy=Math.sin(ang*rad);
+  const px=-Math.sin(ang*rad),py=Math.cos(ang*rad);
+  const seg=(cx,cy,ux,uy,col)=>`<line x1="${(cx-ux*L).toFixed(1)}" y1="${(cy-uy*L).toFixed(1)}" x2="${(cx+ux*L).toFixed(1)}" y2="${(cy+uy*L).toFixed(1)}" stroke="${col}" stroke-width="7" stroke-linecap="round"/>`;
+  let lines;
+  if(tipo==='paralelas'){const g=26;
+    lines=seg(Cx+px*g,Cy+py*g,dx,dy,'var(--azul)')+seg(Cx-px*g,Cy-py*g,dx,dy,'var(--naranja)');}
+  else{const d2x=Math.cos((ang+90)*rad),d2y=Math.sin((ang+90)*rad);
+    lines=seg(Cx,Cy,dx,dy,'var(--azul)')+seg(Cx,Cy,d2x,d2y,'var(--naranja)');}
+  return `<svg viewBox="0 0 220 170" width="240" height="180">${lines}</svg>`;
+}
+function render_rectas(msg){
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Cómo son estas rectas?</div>
+    <div class="instr"><b>Paralelas</b>: nunca se cruzan. <b>Perpendiculares</b>: se cruzan formando una esquina (90°).</div>
+    <div style="display:flex;justify-content:center;margin:10px 0;background:rgba(255,255,255,.08);border-radius:16px;padding:8px">${rectasSVG(rt_tipo,rt_ang)}</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--celeste)" onclick="respRectas('paralelas')">Paralelas</button>
+      <button class="abtn" style="background:var(--violeta)" onclick="respRectas('perpendiculares')">Perpendiculares</button>
+    </div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respRectas(t){if(t===rt_tipo){estrella();festejar();render_rectas(`¡Muy bien! Son ${rt_tipo} 🎉`);
+  hablar(`¡Correcto! Son ${rt_tipo}`, jRectas);}
+  else{render_rectas('Si NUNCA se tocan son paralelas; si se cruzan en esquina, perpendiculares 😊');hablar('Fijate si se cruzan o no.');}}
+
+/* --- S) DINERO (billetes y monedas, mezcla amplia $10 a $20000) --- */
+const DENOM=[10,50,100,500,1000,2000,10000,20000];
+let dn_items,dn_total;
+function jDinero(){juegoActual='dinero';
+  do{const n=rnd(2,4);dn_items=[];for(let i=0;i<n;i++)dn_items.push(pick(DENOM));
+    dn_total=dn_items.reduce((a,b)=>a+b,0);}while(dn_total>25000);
+  dn_items.sort((a,b)=>b-a);render_dinero('');
+  hablar('¿Cuánto dinero hay en total? Sumá los billetes y las monedas.');}
+function billeteHTML(v){ return dineroFig(v); }
+function opcionesDinero(correcta){
+  const set=new Set([correcta]);const deltas=[10,50,100,500,1000,2000];
+  let guard=0;
+  while(set.size<4&&guard<50){guard++;const d=pick(deltas)*(Math.random()<.5?1:-1);const v=correcta+d;if(v>0)set.add(v);}
+  return [...set].sort((a,b)=>a-b);
+}
+function render_dinero(msg){
+  const ops=opcionesDinero(dn_total);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Cuánto hay en total?</div>
+    <div class="instr">Sumá todos los billetes 💵 y monedas 🪙.</div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;max-width:94vw;margin:10px 0">${dn_items.map(billeteHTML).join('')}</div>
+    <div class="choicegrid">${ops.map(n=>`<button class="choice" onclick="respDinero(${n})">$${n}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respDinero(n){if(n===dn_total){estrella();festejar();render_dinero(`¡Muy bien! Hay $${dn_total} 🎉`);
+  hablar(`¡Correcto! Hay ${dn_total} pesos`, jDinero);}
+  else{render_dinero('Sumá primero los billetes grandes y después las monedas 😊');hablar('Sumá de a poco, billete por billete.');}}
+
+/* --- T) LA HORA EXACTA (horas y minutos) --- */
+let h3_h,h3_m;
+function jHora3(){juegoActual='hora3';h3_h=rnd(1,12);h3_m=pick([0,15,30,45]);render_hora3('');
+  hablar('¿Qué hora es? Mirá la aguja larga para los minutos.');}
+function relojSVG2(h,m){
+  let nums='';
+  for(let i=1;i<=12;i++){const ang=(i*30-90)*Math.PI/180;const x=100+72*Math.cos(ang),y=100+72*Math.sin(ang);
+    nums+=`<text x="${x.toFixed(1)}" y="${(y+6).toFixed(1)}" text-anchor="middle" font-size="18" font-weight="800" fill="#0a2a52">${i}</text>`;}
+  const hr=(((h%12)+m/60)*30-90)*Math.PI/180;
+  const hx=100+42*Math.cos(hr),hy=100+42*Math.sin(hr);
+  const mr=(m*6-90)*Math.PI/180;
+  const mx=100+66*Math.cos(mr),my=100+66*Math.sin(mr);
+  return `<svg viewBox="0 0 200 200" width="180" height="180">
+    <circle cx="100" cy="100" r="94" fill="#fff" stroke="var(--azul)" stroke-width="6"/>${nums}
+    <line x1="100" y1="100" x2="${hx.toFixed(1)}" y2="${hy.toFixed(1)}" stroke="var(--azul)" stroke-width="8" stroke-linecap="round"/>
+    <line x1="100" y1="100" x2="${mx.toFixed(1)}" y2="${my.toFixed(1)}" stroke="var(--rojo)" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="100" cy="100" r="7" fill="var(--azul)"/></svg>`;
+}
+function fmtHora(h,m){return `${h}:${String(m).padStart(2,'0')}`;}
+function render_hora3(msg){
+  const correcto=fmtHora(h3_h,h3_m);const set=new Set([correcto]);
+  while(set.size<4){set.add(fmtHora(rnd(1,12),pick([0,15,30,45])));}
+  const ops=[...set].sort(()=>Math.random()-.5);
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Qué hora es?</div>
+    <div class="instr">Aguja <b>corta</b>: la hora. Aguja <b>larga</b> (roja): los minutos.</div>
+    <div style="display:flex;justify-content:center;margin:8px 0">${relojSVG2(h3_h,h3_m)}</div>
+    <div class="choicegrid">${ops.map(t=>`<button class="choice txt" onclick="respHora3('${t}')">${t}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respHora3(t){const correcto=fmtHora(h3_h,h3_m);
+  if(t===correcto){estrella();festejar();render_hora3(`¡Muy bien! Son las ${correcto} 🎉`);
+    const dicho=h3_m===0?`las ${h3_h} en punto`:(h3_m===15?`las ${h3_h} y cuarto`:(h3_m===30?`las ${h3_h} y media`:`las ${h3_h} y ${h3_m}`));
+    hablar(`¡Correcto! Son ${dicho}`, jHora3);}
+  else{render_hora3('Aguja CORTA = la hora. Aguja LARGA roja = los minutos 😊');hablar('La aguja larga marca los minutos.');}}
+
+/* ============================================================
+   ====  JUEGOS DE 3° GRADO — Eje ESTADÍSTICA Y PROBABILIDAD ==
+   ============================================================ */
+
+/* --- U) LEER UN GRÁFICO DE BARRAS (organizar e interpretar datos) --- */
+let gr_cats,gr_preg,gr_resp,gr_ops,gr_esNum;
+function jGrafico(){
+  juegoActual='grafico';
+  const pool=[{e:'🍎',n:'manzana'},{e:'🍌',n:'banana'},{e:'🍇',n:'uva'},{e:'🍊',n:'naranja'},{e:'🍓',n:'frutilla'}];
+  gr_cats=[...pool].sort(()=>Math.random()-.5).slice(0,3).map(c=>({e:c.e,n:c.n,v:rnd(2,8)}));
+  const maxv=Math.max(...gr_cats.map(c=>c.v));
+  if(gr_cats.filter(c=>c.v===maxv).length>1){gr_cats[gr_cats.findIndex(c=>c.v===maxv)].v=maxv+1;}
+  const q=pick(['max','valor','total','dif']);
+  const vs=gr_cats.map(c=>c.v),tot=vs.reduce((a,b)=>a+b,0),mx=Math.max(...vs);
+  if(q==='max'){gr_preg='¿Qué eligieron MÁS?';gr_resp=gr_cats.find(c=>c.v===mx).n;gr_esNum=false;gr_ops=gr_cats.map(c=>c.n).sort(()=>Math.random()-.5);}
+  else if(q==='total'){gr_preg='¿Cuántos votaron en total?';gr_resp=tot;gr_esNum=true;gr_ops=opciones(tot,1,40);}
+  else if(q==='valor'){const c=gr_cats[rnd(0,gr_cats.length-1)];gr_preg=`¿Cuántos eligieron ${c.n} ${c.e}?`;gr_resp=c.v;gr_esNum=true;gr_ops=opciones(c.v,1,14);}
+  else{const s=[...gr_cats].sort((a,b)=>b.v-a.v);gr_preg=`¿Cuántos MÁS eligieron ${s[0].n} que ${s[s.length-1].n}?`;gr_resp=s[0].v-s[s.length-1].v;gr_esNum=true;gr_ops=opciones(gr_resp,1,14);}
+  render_grafico('');hablar('Mirá el gráfico. '+gr_preg);
+}
+function render_grafico(msg){
+  const bars=gr_cats.map(c=>{
+    const blocks=Array.from({length:c.v}).map(()=>`<span style="width:18px;height:18px;background:var(--celeste);border-radius:4px;display:inline-block"></span>`).join('');
+    return `<div style="display:flex;align-items:center;gap:6px;margin:5px 0">
+      <span style="width:32px;font-size:22px;text-align:center">${c.e}</span>
+      <div style="display:flex;gap:3px;flex-wrap:wrap;flex:1">${blocks}</div>
+      <b style="min-width:20px">${c.v}</b></div>`;}).join('');
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op" style="font-size:clamp(18px,4.5vw,24px)">🍉 Frutas preferidas del grado</div>
+    <div class="instr">${gr_preg}</div>
+    <div style="background:rgba(255,255,255,.1);border-radius:16px;padding:14px;margin:8px 0;width:min(360px,90vw)">${bars}</div>
+    <div class="choicegrid">${gr_ops.map(o=>`<button class="choice${gr_esNum?'':' txt'}" onclick="respGrafico('${o}')">${o}</button>`).join('')}</div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respGrafico(o){
+  if(String(o)===String(gr_resp)){estrella();festejar();render_grafico('¡Muy bien! 🎉');
+    hablar(`¡Correcto! La respuesta es ${gr_resp}`, jGrafico);}
+  else{render_grafico('Contá los cuadraditos de cada barra 😊');hablar('Contá los cuadraditos de cada barra.');}
+}
+
+/* --- V) PROBABILIDAD: SEGURO, POSIBLE O IMPOSIBLE --- */
+let pb_bolsa,pb_evento,pb_resp;
+function jProbable(){
+  juegoActual='probable';
+  const cols=[{e:'🔴',n:'roja'},{e:'🔵',n:'azul'},{e:'🟢',n:'verde'},{e:'🟡',n:'amarilla'}];
+  const bar=[...cols].sort(()=>Math.random()-.5);const A=bar[0],B=bar[1];
+  pb_resp=pick(['seguro','posible','imposible']);
+  if(pb_resp==='seguro'){const k=rnd(3,6);pb_bolsa=Array.from({length:k}).map(()=>A);pb_evento=A;}
+  else if(pb_resp==='imposible'){const k=rnd(3,6);pb_bolsa=Array.from({length:k}).map(()=>A);pb_evento=B;}
+  else{const ka=rnd(2,4),kb=rnd(2,4);pb_bolsa=[...Array.from({length:ka}).map(()=>A),...Array.from({length:kb}).map(()=>B)].sort(()=>Math.random()-.5);pb_evento=A;}
+  render_probable('');
+  hablar(`Si sacás una bolita sin mirar, sacar una ${pb_evento.n}, ¿es seguro, posible o imposible?`);
+}
+function render_probable(msg){
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">¿Seguro, posible o imposible?</div>
+    <div class="instr"><b>Seguro</b>: pasa siempre. <b>Posible</b>: puede pasar. <b>Imposible</b>: no puede pasar.</div>
+    <div style="font-size:38px;line-height:1.5;background:rgba(255,255,255,.12);border-radius:20px;padding:16px;margin:8px 0;max-width:92vw">👜<br>${pb_bolsa.map(c=>c.e).join(' ')}</div>
+    <div class="instr">Sacar una bolita <b>${pb_evento.n}</b> ${pb_evento.e} es…</div>
+    <div class="actions">
+      <button class="abtn" style="background:var(--verde)" onclick="respProbable('seguro')">Seguro</button>
+      <button class="abtn" style="background:var(--naranja)" onclick="respProbable('posible')">Posible</button>
+      <button class="abtn" style="background:var(--rojo)" onclick="respProbable('imposible')">Imposible</button>
+    </div>
+    <div class="msg ${msg.includes('Muy')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function respProbable(r){
+  if(r===pb_resp){estrella();festejar();render_probable(`¡Muy bien! Es ${pb_resp} 🎉`);
+    hablar(`¡Correcto! Es ${pb_resp}`, jProbable);}
+  else{const h=pb_resp==='seguro'?'Todas las bolitas son de ese color: pasa siempre 😊'
+      :pb_resp==='imposible'?'No hay ninguna bolita de ese color: no puede pasar 😊'
+      :'Hay de ese color y también de otro: puede pasar o no 😊';
+    render_probable(h);hablar('Mirá cuántas bolitas de ese color hay en la bolsa.');}
+}
+
+/* ============================================================
+   JUEGO (1°) - ARMAR DINERO (formar una cantidad indicada)
+   Billetes: $10 $20 $50 $100  ·  Monedas: $1 $5
+   ============================================================ */
+let d1_obj,d1_have,d1_listo,d1_cont;
+function jDinero1(){juegoActual='dinero1';d1_cont=0;d1NuevaRonda();}
+function d1Siguiente(){d1_cont++;d1NuevaRonda();}
+function d1NuevaRonda(){d1_obj=d1Meta(d1_cont);d1_have=[];d1_listo=false;render_d1('');d1Decir(true);}
+function d1Meta(n){
+  if(n<3) return pick([1,2,3,5,6,10]);            // muy fácil: 1 o 2 piezas
+  if(n<6) return pick([5,7,10,11,15,16,20,25]);   // fácil
+  if(n<10) return rnd(6,40);                       // medio
+  return rnd(20,99);                               // completo
+}
+function d1Decir(conIntro){
+  if(conIntro)hablar(`Vamos a armar ${d1_obj} pesos. Tocá los billetes y las monedas para juntar esa plata.`);
+  else hablar(`Tenés que armar ${d1_obj} pesos.`);
+}
+function d1_total(){return d1_have.reduce((a,b)=>a+b,0);}
+function d1Vis(v){ return dineroFig(v); }
+function render_d1(msg){
+  const t=d1_total();
+  app.innerHTML=fondo()+topbar()+`
+  <div class="screen">
+    <div class="op">Armá $${d1_obj}</div>
+    <div class="instr">Tocá los billetes 💵 y monedas 🪙 de abajo hasta llegar a <b>$${d1_obj}</b>.</div>
+    <div class="actions" style="margin:2px 0 8px">
+      <button class="helpbtn" style="background:var(--celeste);color:#fff" onclick="d1Decir(false)">🔊 Escuchar de nuevo</button>
+      <button class="helpbtn" onclick="mostrarAyuda()">💡 ¿Cómo se hace?</button>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;min-height:58px;max-width:94vw;background:rgba(255,255,255,.1);border-radius:16px;padding:10px;margin:8px 0">${d1_have.length?d1_have.map(d1Vis).join(''):'<span style="opacity:.7">Todavía no pusiste dinero</span>'}</div>
+    <div class="total">Tenés: $${t}</div>
+    <div class="instr" style="margin-top:6px">Tocá para agregar:</div>
+    <div class="actions">
+      <button class="moneybtn" onclick="d1Add(100)">${dineroFig(100)}</button>
+      <button class="moneybtn" onclick="d1Add(50)">${dineroFig(50)}</button>
+      <button class="moneybtn" onclick="d1Add(20)">${dineroFig(20)}</button>
+      <button class="moneybtn" onclick="d1Add(10)">${dineroFig(10)}</button>
+      <button class="moneybtn" onclick="d1Add(5)">${dineroFig(5)}</button>
+      <button class="moneybtn" onclick="d1Add(1)">${dineroFig(1)}</button>
+    </div>
+    <div class="actions" style="margin-top:8px">
+      <button class="abtn" style="background:var(--rojo)" onclick="d1Quitar()">− Quitar el último</button>
+    </div>
+    <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
+  </div>`;
+}
+function d1Add(v){if(d1_listo)return;d1_have.push(v);const t=d1_total();
+  if(t===d1_obj){d1_listo=true;estrella();festejar();render_d1(`¡Correcto! Formaste $${d1_obj} 🎉`);
+    hablar(`¡Muy bien! Formaste ${d1_obj} pesos`, d1Siguiente);}
+  else if(t>d1_obj){render_d1('Te pasaste. Tocá "Quitar" para sacar el último 😊');
+    hablar(`Te pasaste. Tenés ${t}. Tocá quitar para sacar el último.`);}
+  else{render_d1('');hablar(`Pusiste ${v}. Ahora tenés ${t} pesos. Te faltan ${d1_obj-t}.`);}}
+function d1Quitar(){if(d1_listo)return;d1_have.pop();render_d1('');const t=d1_total();
+  hablar(t>0?`Ahora tenés ${t} pesos. Te faltan ${d1_obj-t}.`:'No te quedó nada. Empezá de nuevo.');}
+
+/* arranca */
+bienvenida();
+</script>
+</body>
+</html>
