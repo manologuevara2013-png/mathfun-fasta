@@ -20,8 +20,6 @@
 
   .screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:safe center;padding:60px 14px 28px;position:relative;z-index:2;text-align:center;overflow-y:auto;-webkit-overflow-scrolling:touch;}
   .helpbtn{background:var(--dorado);color:#0a2a52;border:none;border-radius:14px;padding:8px 12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.2);}
-  .moneybtn{background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.25);border-radius:14px;padding:4px;cursor:pointer;font-family:inherit;transition:transform .08s;display:inline-flex;align-items:center;justify-content:center;line-height:0;}
-  .moneybtn:active{transform:translateY(3px);}
   .ejehdr{width:100%;max-width:520px;text-align:left;font-weight:800;font-size:clamp(16px,4vw,19px);color:var(--dorado);margin:16px 0 4px 6px;border-bottom:2px solid rgba(255,255,255,.28);padding-bottom:4px;display:flex;align-items:center;gap:8px;}
   .ejesub{width:100%;max-width:520px;text-align:left;font-size:12.5px;opacity:.85;margin:0 0 8px 6px;font-style:italic;}
   .fasta-nota{max-width:520px;font-size:13px;font-style:italic;opacity:.92;margin:20px auto 4px;line-height:1.45;background:rgba(255,255,255,.1);border-radius:14px;padding:12px 14px;}
@@ -105,6 +103,133 @@
 
 <script>
 /* ============================================================
+   MATHFUN FASTA - SISTEMA DE PROTECCIÓN
+   © Colegio FASTA Juan Pablo II - Mendoza 2024
+   Todos los derechos reservados
+   ============================================================ */
+
+// CONTRASEÑA PROTEGIDA
+const CONTRASENA_CORRECTA = 'FASTA2024';
+const DOMINIO_AUTORIZADO = 'manologuevara2013-png.github.io';
+const FECHA_VENCIMIENTO = '2026-12-31'; // Año escolar 2026
+
+// Sistema de autenticación
+class ProteccionMathFun {
+  static verificarAutenticacion() {
+    const autenticado = sessionStorage.getItem('mathfun_auth');
+    const timestamp = sessionStorage.getItem('mathfun_timestamp');
+    
+    if (!autenticado || autenticado !== 'true') {
+      this.mostrarLoginModal();
+      return false;
+    }
+    
+    // Verificar si la sesión sigue válida (máx 8 horas)
+    if (timestamp) {
+      const ahora = Date.now();
+      const hace = parseInt(timestamp);
+      const horas8 = 8 * 60 * 60 * 1000;
+      
+      if (ahora - hace > horas8) {
+        sessionStorage.removeItem('mathfun_auth');
+        sessionStorage.removeItem('mathfun_timestamp');
+        this.mostrarLoginModal();
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  static mostrarLoginModal() {
+    document.body.innerHTML = `
+    <div style="width:100vw;height:100vh;background:linear-gradient(135deg,#0a4da2 0%,#062d70 100%);display:flex;justify-content:center;align-items:center;font-family:Arial,sans-serif;margin:0;padding:0;">
+      <div style="background:white;padding:50px;border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,0.3);text-align:center;max-width:400px;width:90%;">
+        <div style="font-size:80px;margin-bottom:20px;">🦉</div>
+        <h1 style="color:#0a4da2;margin:0 0 10px;font-size:32px;">MathFun FASTA</h1>
+        <p style="color:#666;margin-bottom:30px;font-size:16px;">Herramienta Educativa Protegida<br>Colegio FASTA Juan Pablo II</p>
+        
+        <div style="background:#f5f5f5;padding:20px;border-radius:10px;margin-bottom:20px;">
+          <label style="display:block;color:#333;font-weight:bold;margin-bottom:10px;text-align:left;">Contraseña:</label>
+          <input type="password" id="contrasena_input" placeholder="Ingresá la contraseña" 
+            style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:16px;box-sizing:border-box;"
+            onkeypress="if(event.key==='Enter') ProteccionMathFun.verificarContrasena()">
+        </div>
+        
+        <button onclick="ProteccionMathFun.verificarContrasena()" 
+          style="width:100%;padding:12px;background:#0a4da2;color:white;border:none;border-radius:8px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:15px;">
+          Ingresar
+        </button>
+        
+        <div id="error_msg" style="color:#d32f2f;font-size:14px;margin-bottom:15px;display:none;"></div>
+        
+        <p style="color:#999;font-size:12px;margin:0;">
+          © FASTA Juan Pablo II 2024 - Todos los derechos reservados<br>
+          Este software está protegido por copyright
+        </p>
+      </div>
+    </div>
+    `;
+  }
+  
+  static verificarContrasena() {
+    const input = document.getElementById('contrasena_input');
+    const error = document.getElementById('error_msg');
+    
+    if (input.value === CONTRASENA_CORRECTA) {
+      sessionStorage.setItem('mathfun_auth', 'true');
+      sessionStorage.setItem('mathfun_timestamp', Date.now().toString());
+      location.reload();
+    } else {
+      error.textContent = '❌ Contraseña incorrecta. Intentá de nuevo.';
+      error.style.display = 'block';
+      input.value = '';
+      input.focus();
+    }
+  }
+  
+  static verificarDominio() {
+    const host = window.location.hostname;
+    if (!host.includes(DOMINIO_AUTORIZADO) && !host.includes('localhost')) {
+      console.warn('⚠️ ADVERTENCIA: Esta aplicación se está ejecutando desde un dominio no autorizado.');
+      const aviso = document.createElement('div');
+      aviso.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#ff9800;color:white;padding:15px;text-align:center;font-weight:bold;z-index:9999;';
+      aviso.innerHTML = '⚠️ ADVERTENCIA: Esta aplicación debe ejecutarse desde mathfun-fasta.github.io';
+      document.body.insertBefore(aviso, document.body.firstChild);
+    }
+  }
+  
+  static verificarFecha() {
+    const hoy = new Date().toISOString().split('T')[0];
+    if (hoy > FECHA_VENCIMIENTO) {
+      alert('⏰ Esta versión de MathFun FASTA ha vencido. Contactá a coordinación para una versión actualizada.');
+      sessionStorage.removeItem('mathfun_auth');
+      location.reload();
+    }
+  }
+  
+  static mostrarCopyright() {
+    console.log('%c🦉 MathFun FASTA', 'color:#0a4da2;font-size:20px;font-weight:bold;');
+    console.log('%c© Colegio FASTA Juan Pablo II 2024 - Todos los derechos reservados', 'color:#666;font-size:12px;');
+    console.log('%cEsta aplicación es software propietario. Su reproducción, distribución o uso no autorizado está prohibido por ley.', 'color:#d32f2f;font-size:11px;font-weight:bold;');
+  }
+}
+
+// Inicializar protecciones
+window.addEventListener('load', function() {
+  ProteccionMathFun.verificarDominio();
+  ProteccionMathFun.verificarFecha();
+  ProteccionMathFun.mostrarCopyright();
+  
+  if (!ProteccionMathFun.verificarAutenticacion()) {
+    return;
+  }
+});
+
+// Mensajes en consola
+ProteccionMathFun.mostrarCopyright();
+
+/* ============================================================
    MathFun FASTA - App web v2
    Bienvenida + Ingreso alumno + 1er GRADO completo
    Colegio FASTA Juan Pablo II - Mendoza
@@ -116,39 +241,6 @@ let estrellas=0;
 
 const EMO={apple:'🍎',star:'⭐',car:'🚗',animal:'🐱',flower:'🌸',fish:'🐠'};
 const TIPOS=Object.keys(EMO);
-const DINERO_COL={
-  1:{tipo:'moneda',c1:'#d79a63',c2:'#a86a34'},
-  5:{tipo:'moneda',c1:'#d9dde2',c2:'#9aa0a8'},
-  10:{tipo:'billete',c1:'#9aa84a',c2:'#5f7327',txt:'#fff'},
-  20:{tipo:'billete',c1:'#db5a5a',c2:'#a12f2f',txt:'#fff'},
-  50:{tipo:'billete',c1:'#38a89a',c2:'#1f6f66',txt:'#fff'},
-  100:{tipo:'billete',c1:'#8a70cf',c2:'#54408f',txt:'#fff'},
-  500:{tipo:'billete',c1:'#46a857',c2:'#2a6e37',txt:'#fff'},
-  1000:{tipo:'billete',c1:'#e0954a',c2:'#a85f22',txt:'#fff'},
-  2000:{tipo:'billete',c1:'#cf5a98',c2:'#8f2f63',txt:'#fff'},
-  10000:{tipo:'billete',c1:'#c39a3f',c2:'#836223',txt:'#fff'},
-  20000:{tipo:'billete',c1:'#5a8bcf',c2:'#2f548f',txt:'#fff'}
-};
-function dineroFig(v){
-  const d=DINERO_COL[v]||{tipo:'billete',c1:'#8a8a8a',c2:'#555',txt:'#fff'};
-  const s=String(v);
-  if(d.tipo==='moneda'){
-    return `<svg viewBox="0 0 60 60" width="46" height="46" style="margin:3px;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))">
-      <defs><radialGradient id="cn${v}" cx="40%" cy="35%" r="75%"><stop offset="0" stop-color="${d.c1}"/><stop offset="1" stop-color="${d.c2}"/></radialGradient></defs>
-      <circle cx="30" cy="30" r="27" fill="url(#cn${v})" stroke="${d.c2}" stroke-width="2"/>
-      <circle cx="30" cy="30" r="21" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
-      <text x="30" y="36" text-anchor="middle" font-size="23" font-weight="900" fill="#3a2a12" font-family="Arial">${v}</text>
-      <text x="30" y="48" text-anchor="middle" font-size="6" font-weight="700" fill="#3a2a12" font-family="Arial">PESOS</text></svg>`;
-  }
-  const fs=s.length<=2?24:(s.length===3?19:(s.length===4?15:12));
-  return `<svg viewBox="0 0 120 66" width="90" height="50" style="margin:3px;vertical-align:middle;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))">
-    <defs><linearGradient id="bl${v}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${d.c1}"/><stop offset="1" stop-color="${d.c2}"/></linearGradient></defs>
-    <rect x="2" y="2" width="116" height="62" rx="8" fill="url(#bl${v})" stroke="rgba(255,255,255,.55)" stroke-width="2"/>
-    <ellipse cx="34" cy="33" rx="24" ry="20" fill="rgba(255,255,255,.16)"/>
-    <text x="88" y="38" text-anchor="middle" font-size="${fs}" font-weight="900" fill="${d.txt}" font-family="Arial">${v}</text>
-    <text x="88" y="51" text-anchor="middle" font-size="7" font-weight="700" fill="${d.txt}" font-family="Arial" opacity=".92">PESOS</text>
-    <text x="60" y="61" text-anchor="middle" font-size="5.5" fill="${d.txt}" opacity=".82" font-family="Arial">REPÚBLICA ARGENTINA</text></svg>`;
-}
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 
@@ -1241,7 +1333,10 @@ function jDinero(){juegoActual='dinero';
     dn_total=dn_items.reduce((a,b)=>a+b,0);}while(dn_total>25000);
   dn_items.sort((a,b)=>b-a);render_dinero('');
   hablar('¿Cuánto dinero hay en total? Sumá los billetes y las monedas.');}
-function billeteHTML(v){ return dineroFig(v); }
+function billeteHTML(v){
+  if(v<=50)return `<span style="display:inline-flex;align-items:center;justify-content:center;width:50px;height:50px;border-radius:50%;background:var(--dorado);color:#0a2a52;font-weight:800;font-size:13px;border:3px solid #caa02e;margin:4px">$${v}</span>`;
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:94px;height:52px;border-radius:8px;background:var(--verde);color:#fff;font-weight:800;font-size:16px;border:3px solid #2f9c4f;margin:4px">$${v}</span>`;
+}
 function opcionesDinero(correcta){
   const set=new Set([correcta]);const deltas=[10,50,100,500,1000,2000];
   let guard=0;
@@ -1384,52 +1479,38 @@ function respProbable(r){
    JUEGO (1°) - ARMAR DINERO (formar una cantidad indicada)
    Billetes: $10 $20 $50 $100  ·  Monedas: $1 $5
    ============================================================ */
-let d1_obj,d1_have,d1_listo,d1_cont;
-function jDinero1(){juegoActual='dinero1';d1_cont=0;d1NuevaRonda();}
-function d1Siguiente(){d1_cont++;d1NuevaRonda();}
-function d1NuevaRonda(){d1_obj=d1Meta(d1_cont);d1_have=[];d1_listo=false;render_d1('');d1Decir(true);}
-function d1Meta(n){
-  if(n<3) return pick([1,2,3,5,6,10]);            // muy fácil: 1 o 2 piezas
-  if(n<6) return pick([5,7,10,11,15,16,20,25]);   // fácil
-  if(n<10) return rnd(6,40);                       // medio
-  return rnd(20,99);                               // completo
-}
-function d1Decir(conIntro){
-  if(conIntro)hablar(`Vamos a armar ${d1_obj} pesos. Tocá los billetes y las monedas para juntar esa plata.`);
-  else hablar(`Tenés que armar ${d1_obj} pesos.`);
-}
+let d1_obj,d1_have,d1_listo;
+function jDinero1(){juegoActual='dinero1';d1_obj=rnd(11,99);d1_have=[];d1_listo=false;render_d1('');
+  hablar(`Vamos a armar ${d1_obj} pesos. Tocá los billetes y las monedas de abajo para juntar esa plata. Si querés, tocá "¿Cómo se hace?" y te explico.`);}
 function d1_total(){return d1_have.reduce((a,b)=>a+b,0);}
-function d1Vis(v){ return dineroFig(v); }
+function d1Vis(v){
+  if(v<=5)return `<span style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--dorado);color:#0a2a52;font-weight:800;font-size:13px;border:3px solid #caa02e;margin:3px">$${v}</span>`;
+  return `<span style="display:inline-flex;align-items:center;justify-content:center;width:78px;height:46px;border-radius:7px;background:var(--verde);color:#fff;font-weight:800;font-size:15px;border:3px solid #2f9c4f;margin:3px">$${v}</span>`;
+}
 function render_d1(msg){
   const t=d1_total();
   app.innerHTML=fondo()+topbar()+`
   <div class="screen">
     <div class="op">Armá $${d1_obj}</div>
-    <div class="instr">Tocá los billetes 💵 y monedas 🪙 de abajo hasta llegar a <b>$${d1_obj}</b>.</div>
-    <div class="actions" style="margin:2px 0 8px">
-      <button class="helpbtn" style="background:var(--celeste);color:#fff" onclick="d1Decir(false)">🔊 Escuchar de nuevo</button>
-      <button class="helpbtn" onclick="mostrarAyuda()">💡 ¿Cómo se hace?</button>
-    </div>
+    <div class="instr">Tocá billetes 💵 y monedas 🪙 hasta llegar a <b>$${d1_obj}</b>.</div>
+    <button class="helpbtn" style="margin:2px 0 8px" onclick="mostrarAyuda()">💡 ¿Cómo se hace?</button>
     <div style="display:flex;flex-wrap:wrap;justify-content:center;align-items:center;min-height:58px;max-width:94vw;background:rgba(255,255,255,.1);border-radius:16px;padding:10px;margin:8px 0">${d1_have.length?d1_have.map(d1Vis).join(''):'<span style="opacity:.7">Todavía no pusiste dinero</span>'}</div>
     <div class="total">Tenés: $${t}</div>
-    <div class="instr" style="margin-top:6px">Tocá para agregar:</div>
     <div class="actions">
-      <button class="moneybtn" onclick="d1Add(100)">${dineroFig(100)}</button>
-      <button class="moneybtn" onclick="d1Add(50)">${dineroFig(50)}</button>
-      <button class="moneybtn" onclick="d1Add(20)">${dineroFig(20)}</button>
-      <button class="moneybtn" onclick="d1Add(10)">${dineroFig(10)}</button>
-      <button class="moneybtn" onclick="d1Add(5)">${dineroFig(5)}</button>
-      <button class="moneybtn" onclick="d1Add(1)">${dineroFig(1)}</button>
-    </div>
-    <div class="actions" style="margin-top:8px">
-      <button class="abtn" style="background:var(--rojo)" onclick="d1Quitar()">− Quitar el último</button>
+      <button class="abtn" style="background:var(--verde)" onclick="d1Add(100)">$100</button>
+      <button class="abtn" style="background:var(--verde)" onclick="d1Add(50)">$50</button>
+      <button class="abtn" style="background:var(--verde)" onclick="d1Add(20)">$20</button>
+      <button class="abtn" style="background:var(--verde)" onclick="d1Add(10)">$10</button>
+      <button class="abtn" style="background:var(--dorado);color:#0a2a52" onclick="d1Add(5)">$5</button>
+      <button class="abtn" style="background:var(--dorado);color:#0a2a52" onclick="d1Add(1)">$1</button>
+      <button class="abtn" style="background:var(--rojo)" onclick="d1Quitar()">− Quitar</button>
     </div>
     <div class="msg ${msg.includes('Correcto')?'ok':'bad'}">${msg}</div>
   </div>`;
 }
 function d1Add(v){if(d1_listo)return;d1_have.push(v);const t=d1_total();
   if(t===d1_obj){d1_listo=true;estrella();festejar();render_d1(`¡Correcto! Formaste $${d1_obj} 🎉`);
-    hablar(`¡Muy bien! Formaste ${d1_obj} pesos`, d1Siguiente);}
+    hablar(`¡Muy bien! Formaste ${d1_obj} pesos`, jDinero1);}
   else if(t>d1_obj){render_d1('Te pasaste. Tocá "Quitar" para sacar el último 😊');
     hablar(`Te pasaste. Tenés ${t}. Tocá quitar para sacar el último.`);}
   else{render_d1('');hablar(`Pusiste ${v}. Ahora tenés ${t} pesos. Te faltan ${d1_obj-t}.`);}}
